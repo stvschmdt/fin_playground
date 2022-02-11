@@ -49,9 +49,10 @@ class Account(object):
     def view_balance_history(self, save=False):
         fig, ax = plt.subplots(figsize=(5, 3))
         fig.subplots_adjust(bottom=0.15, left=0.2)
-        ax.plot(self.history['balance'])
+        ax.plot(self.history['balance'], c='k')
         ax.set_xlabel('Time')
         ax.set_ylabel('Balance', labelpad=18)
+        plt.title('{} Account Summary'.format(self.name))
         plt.xticks([])
         plt.show()
 
