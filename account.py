@@ -19,8 +19,9 @@ class Account(object):
         self.log = logger.Logging()
         self.name = name
         self.balance = balance
-        self.history = {'buy': [], 'sell' : [], 'balance' : [], 'day' : []}
+        self.history = {'action' : [], 'buy': [], 'sell' : [], 'balance' : [], 'day' : []}
         self.history['balance'].append(balance)
+        self.history['action'].append('open')
         self.holdings = collections.defaultdict(int)
 
     def deposit(self, cash):
@@ -45,6 +46,15 @@ class Account(object):
     def get_balance(self):
         return self.balance
 
+    def view_balance_history(self, save=False):
+        fig, ax = plt.subplots(figsize=(5, 3))
+        fig.subplots_adjust(bottom=0.15, left=0.2)
+        ax.plot(self.history['balance'])
+        ax.set_xlabel('Time')
+        ax.set_ylabel('Balance', labelpad=18)
+        plt.xticks([])
+        plt.show()
+
     def buy(self, asset, quantity, price, partial=False, info=None):
         '''
         partial: if attempting to purchase 5, but balance supports 3, buy 3 else buy 0
@@ -65,6 +75,7 @@ class Account(object):
            # execute buy and accounting
             self.balance -= quantity * price
             self.history['balance'].append(self.balance)
+            self.history['action'].append('buy')
             self.holdings[asset] += quantity
             # history buy tuple
             self.history['buy'].append( (asset, quantity, price) )
@@ -84,6 +95,7 @@ class Account(object):
            # execute buy and accounting
             self.balance -= fill * price
             self.history['balance'].append(self.balance)
+            self.history['action'].append('buy')
             self.holdings[asset] += quantity
             self.holdings[asset] += fill
             # history buy tuple
@@ -107,6 +119,7 @@ class Account(object):
                 self.balance += quantity * price
                 self.history['balance'].append(self.balance)
                 self.history['sell'].append( (asset, quantity, price) )
+                self.history['action'].append('sell')
                 self.log.info('sold {} of {} at {}'.format(quantity, asset, price))
         return quantity
 
@@ -133,4 +146,5 @@ if __name__ == '__main__':
     acc.buy('soxl', 3,  soxl, False)
     print(acc.get_holdings())
     print(acc.get_history())
+    acc.view_balance_history()
 
