@@ -1,2 +1,2 @@
-# learn_agent_fin
+# learning agents / models
 Financial Asset Playground
