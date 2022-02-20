@@ -43,7 +43,6 @@ def industry_dict():
 
 def build_csv_dict(ticker_lst):
     master_dict = {}
-    ticker_lst = ticker_lst[:2]
     for ticker in ticker_lst:
         test, _ = ts.get_daily(ticker, outputsize='full')
         cols = ['open', 'high', 'low', 'close', 'volume']
