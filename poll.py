@@ -40,10 +40,16 @@ def industry_dict():
 def build_csv_dict(ticker_lst):
     master_dict = {}
     for ticker in ticker_lst:
-        test, _ = ts.get_daily(ticker, outputsize='full')
+        daily, _ = ts.get_daily(ticker, outputsize='full')
+        weekly, _ = ts.get_weekly(ticker, outputsize='full')
+        monthly, _ = ts.get_monthly(ticker, output_size='full')
         cols = ['open', 'high', 'low', 'close', 'volume']
-        file_loc = "SP500_daily_data/" + ticker
-        test.to_csv(file_loc)
+        daily_file_loc = "SP500_daily_data/" + ticker
+        weekly_file_loc = "SP500_weekly_data" + ticker
+        monthly_file_loc = "SP500_monthly_data" + ticker
+        daily.to_csv(daily_file_loc)
+        weekly.to_csv(weekly_file_loc)
+        monthly.to_csv(monthly_file_loc)
         time.sleep(12)
 
 if __name__ == "__main__":
