@@ -52,6 +52,6 @@ def build_csv_dict(ticker_lst):
 
 if __name__ == "__main__":
    ticker_lst = get_tickers()
-   master_dict = build_csv_dict(ticker_lst)
+   build_csv_dict(ticker_lst)
 
 
