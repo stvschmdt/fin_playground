@@ -17,8 +17,7 @@ from datetime import datetime
 
 today = datetime.today().strftime('%Y-%m-%d')
 
-API_key = '7CKGY5COYII98PRI'
-temp = '7CKGY5COYII98PRI'
+API_key = '599NW2X84IZN5W1U'
 
 #sp_names = pd.read_csv('constituents_csv.csv')
 #sp_financials = pd.read_csv('constituents-financials_csv.csv')
@@ -51,22 +50,26 @@ class tech_indicators:
 def build_csv(ticker_lst, timeframe='day', cols = ['open', 'high', 'low', 'close', 'volume']):
     # do a check for which one to read in
     # add in some appropriate reasonable time stamp
+    bad_tickers = []
     for ticker in ticker_lst:
-        # if full exists in dir
-        daily, _ = ts.get_daily(ticker, outputsize='full')
-        # else
-        # daily, _ = ts.get_daily(ticker, outputsize='compact')
-        # read in the full dataframe, merge the two
-        weekly, _ = ts.get_weekly(ticker, outputsize='full')
-        monthly, _ = ts.get_monthly(ticker, outputsize='full')
-        #cols = ['open', 'high', 'low', 'close', 'volume']
-        daily_file_loc = "SP500_daily_data/" + ticker
-        weekly_file_loc = "SP500_weekly_data/" + ticker
-        monthly_file_loc = "SP500_monthly_data/" + ticker
-        daily.to_csv(daily_file_loc)
-        weekly.to_csv(weekly_file_loc)
-        monthly.to_csv(monthly_file_loc)
-        time.sleep(12)
+        try:
+            if timeframe == 'day':
+                data, _ = ts.get_daily(ticker, outputsize='full')
+                data_file_loc = "SP500_daily_data/" + ticker
+            elif timeframe == "week":
+                data, _ = ts.get_weekly(ticker, outputsize='full')
+                data_file_loc = "SP500_weekly_data/" + ticker
+            elif timeframe == "month":
+                data, _ = ts.get_monthly(ticker, outputsize='full')
+                data_file_loc = "SP500_monthly_data/" + ticker
+            data.to_csv(data_file_loc)
+        except:
+            bad_tickers.append(ticker)
+        time.sleep(1)
+    print(bad_tickers)
+
+    # bad_tickers = ['AGN', 'APC', 'BBT', 'BF.B', 'COG', 'CBS', 'CXO', 'LB', 'MYL', 'RHT', 'COL', 'SCG', 'TMK', 'VAR', 'WLTW']
+    # need to add date_time functionality to write a timestamp of when the function was run to a file
 
 def build_monthly(ticker_list):
     sp_path = 'storage/monthly/SP500/'
@@ -96,11 +99,10 @@ def add_tech_indicators(ticker_list):
 test_ticker_list = ['aon', 'mmm', 'aapl', 'msft', 'goog']
 
 sma_aapl, _ = indicators.get_sma('aapl', interval='daily')
-print(sma_aapl.head())
 
 if __name__ == "__main__":
    ticker_lst = get_tickers()
-   #build_csv(ticker_lst)
+   build_csv(ticker_lst)
 
 # thinking about dataloader
 # separate file for last update either at dir level or file dict level
