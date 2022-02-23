@@ -18,6 +18,7 @@ from datetime import datetime
 today = datetime.today().strftime('%Y-%m-%d')
 
 API_key = '7CKGY5COYII98PRI'
+temp = '7CKGY5COYII98PRI'
 
 #sp_names = pd.read_csv('constituents_csv.csv')
 #sp_financials = pd.read_csv('constituents-financials_csv.csv')
@@ -37,6 +38,16 @@ def industry_dict():
         sector_dict[i] = j
     return sector_dict
 
+class tech_indicators:
+    def init(self):
+        pass
+
+#loop through tickers
+#add basic price data to SP 500 folder
+#go through each tech indicator and get a column for that ticker
+#add the column to SP 500 folder and the csv for that feature
+#separate function for each timeframe?
+
 def build_csv(ticker_lst, timeframe='day', cols = ['open', 'high', 'low', 'close', 'volume']):
     # do a check for which one to read in
     # add in some appropriate reasonable time stamp
@@ -47,19 +58,49 @@ def build_csv(ticker_lst, timeframe='day', cols = ['open', 'high', 'low', 'close
         # daily, _ = ts.get_daily(ticker, outputsize='compact')
         # read in the full dataframe, merge the two
         weekly, _ = ts.get_weekly(ticker, outputsize='full')
-        monthly, _ = ts.get_monthly(ticker, output_size='full')
+        monthly, _ = ts.get_monthly(ticker, outputsize='full')
         #cols = ['open', 'high', 'low', 'close', 'volume']
         daily_file_loc = "SP500_daily_data/" + ticker
-        weekly_file_loc = "SP500_weekly_data" + ticker
-        monthly_file_loc = "SP500_monthly_data" + ticker
+        weekly_file_loc = "SP500_weekly_data/" + ticker
+        monthly_file_loc = "SP500_monthly_data/" + ticker
         daily.to_csv(daily_file_loc)
         weekly.to_csv(weekly_file_loc)
         monthly.to_csv(monthly_file_loc)
         time.sleep(12)
 
+def build_monthly(ticker_list):
+    sp_path = 'storage/monthly/SP500/'
+    for ticker in ticker_list:
+        basic_data, _ = ts.get_monthly(ticker, outputsize='full')
+        #function that loops through the tech indicators
+        #and then we add the columns, both to basic_data and the feature specific df
+        basic_data.to_csv(sp_path + ticker)
+
+
+
+
+#want a function that takes a ticker and returns a column of data for a specific feature
+
+def add_tech_indicators(ticker_list):
+    
+    for split in ['daily', 'weekly', 'monthly']:
+        daily = pd.DataFrame()
+        weekly = pd.DataFrame()
+        monthly = pd.DataFrame()
+        for ticker in ticker_list:
+            data, _ = indicators.get_sma(ticker, interval=split)
+            daily = pd.merge(left=daily, right=data, on='date')
+            
+
+
+test_ticker_list = ['aon', 'mmm', 'aapl', 'msft', 'goog']
+
+sma_aapl, _ = indicators.get_sma('aapl', interval='daily')
+print(sma_aapl.head())
+
 if __name__ == "__main__":
    ticker_lst = get_tickers()
-   build_csv(ticker_lst)
+   #build_csv(ticker_lst)
 
 # thinking about dataloader
 # separate file for last update either at dir level or file dict level
