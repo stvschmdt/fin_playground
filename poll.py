@@ -47,51 +47,42 @@ class tech_indicators:
 #add the column to SP 500 folder and the csv for that feature
 #separate function for each timeframe?
 
-def build_csv(ticker_lst, timeframe='day', cols = ['open', 'high', 'low', 'close', 'volume']):
+def build_csv(ticker_lst, timeframe='daily', cols = ['open', 'high', 'low', 'close', 'volume']):
     # do a check for which one to read in
     # add in some appropriate reasonable time stamp
-    count = 1
     bad_tickers = []
     good_tickers = []
+    ticker_lst = ["AAPL", "MMM", "ZION", "ZTS", "XRX"]
+    tech_indicators_dict = tech_indicators_dict_initialize(['SMA'], timeframe)
     for ticker in ticker_lst:
         try:
-            if timeframe == 'day':
+            if timeframe == 'daily':
                 print('here')
-                tech_indicators_dict = tech_indicators_dict_initialize(['SMA', 'EMA', 'WMA'], 'daily')
-                print(tech_indicators_dict)
                 data, _ = ts.get_daily(ticker, outputsize='full')
                 length = data.shape[0]
                 # call function to add tech indicators to data file
-                sma, _ = indicators.get_sma(ticker, interval='daily')
-                print(sma['SMA'].to_list())
-                print('before corrected length')
+                sma, _ = indicators.get_sma(ticker, timeframe)
                 
         
                 data['SMA'] = correct_length(length, sma['SMA'].to_list())
-                print('after corrected length')
-                print(data)
-                print(tech_indicators_dict)
-
-#this is where I stopped
-#need to add SMA into tech_indicators_dict
                 
-                tech_indicators_dict['SMA'] = sma['SMA'].to_list()
-                data_file_loc = "storage/daily/tickers/" + ticker # writes full ticker file to storage
-                data.to_csv(data_file_loc)
-                print(tech_indicators_dict)
-            elif timeframe == "week":
+                tech_indicators_dict['SMA'].append(sma['SMA'].to_list())
+                #data_file_loc = "storage/daily/tickers/" + ticker # writes full ticker file to storage
+                #data.to_csv(data_file_loc)
+            elif timeframe == "weekly":
                 data, _ = ts.get_weekly(ticker, outputsize='full')
                 data_file_loc = "SP500_weekly_data/" + ticker
-            elif timeframe == "month":
+            elif timeframe == "monthly":
                 data, _ = ts.get_monthly(ticker, outputsize='full')
                 data_file_loc = "SP500_monthly_data/" + ticker
             good_tickers.append(ticker)
-            data.to_csv(data_file_loc)
         except:
             bad_tickers.append(ticker)
         #need a function that names the columns in the technical indicators dataframes we've constructed
         time.sleep(1)
-        count += 1
+    sma_df = fit_tech_to_df(tech_indicators_dict["SMA"], good_tickers)
+    print(sma_df)
+    print(len(tech_indicators_dict["SMA"]))
     print(bad_tickers)
 
     # bad_tickers = ['AGN', 'APC', 'BBT', 'BF.B', 'COG', 'CBS', 'CXO', 'LB', 'MYL', 'RHT', 'COL', 'SCG', 'TMK', 'VAR', 'WLTW']
@@ -104,7 +95,11 @@ def tech_indicators_dict_initialize(features_lst, timeframe):
         tech_indicators_dict[feature] = [time_index]
     return tech_indicators_dict
 
-
+def fit_tech_to_df(tech_data_lst, cols):
+    tech_data_df = pd.DataFrame(tech_data_lst).transpose()
+    tech_data_df.columns = ['date'] + cols
+    tech_data_df = tech_data_df.set_index('date')
+    return tech_data_df
 
 
 def correct_length(length, tech_data):
@@ -126,6 +121,7 @@ def correct_length(length, tech_data):
 
 
 def date_getter(timeframe):
+    print(timeframe)
     if timeframe == 'daily':
         data, _ = ts.get_daily(symbol='MMM', outputsize='full')
     elif timeframe == 'weekly':
@@ -141,9 +137,6 @@ def date_getter(timeframe):
 #print(tech_indicators_dict_initialize(['SMA'], 'daily'))
 
 
-build_csv(['MMM'], timeframe='day', cols = ['open', 'high', 'low', 'close', 'volume'])
-
-
 #want a function that takes a ticker and returns a column of data for a specific feature
 
 
@@ -151,7 +144,7 @@ build_csv(['MMM'], timeframe='day', cols = ['open', 'high', 'low', 'close', 'vol
 
 if __name__ == "__main__":
    ticker_lst = get_tickers()
-   #build_csv(ticker_lst)
+   build_csv(ticker_lst)
 
 # thinking about dataloader
 # separate file for last update either at dir level or file dict level
