@@ -56,6 +56,7 @@ def build_csv(ticker_lst, timeframe='day', cols = ['open', 'high', 'low', 'close
             if timeframe == 'day':
                 data, _ = ts.get_daily(ticker, outputsize='full')
                 data_file_loc = "SP500_daily_data/" + ticker
+                
             elif timeframe == "week":
                 data, _ = ts.get_weekly(ticker, outputsize='full')
                 data_file_loc = "SP500_weekly_data/" + ticker
