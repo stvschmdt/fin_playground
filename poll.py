@@ -52,13 +52,14 @@ def build_csv(ticker_lst, timeframe='daily', cols = ['open', 'high', 'low', 'clo
     # add in some appropriate reasonable time stamp
     bad_tickers = []
     good_tickers = []
+    features = ['SMA']
     ticker_lst = ["AAPL", "MMM", "ZION", "ZTS", "XRX"]
-    tech_indicators_dict = tech_indicators_dict_initialize(['SMA'], timeframe)
+    tech_indicators_dict = tech_indicators_dict_initialize(features, timeframe)
     for ticker in ticker_lst:
         try:
             if timeframe == 'daily':
-                print('here')
                 data, _ = ts.get_daily(ticker, outputsize='full')
+                data.columns = ['open', 'high', 'low', 'close', 'volume']
                 length = data.shape[0]
                 # call function to add tech indicators to data file
                 sma, _ = indicators.get_sma(ticker, timeframe)
@@ -67,8 +68,8 @@ def build_csv(ticker_lst, timeframe='daily', cols = ['open', 'high', 'low', 'clo
                 data['SMA'] = correct_length(length, sma['SMA'].to_list())
                 
                 tech_indicators_dict['SMA'].append(sma['SMA'].to_list())
-                #data_file_loc = "storage/daily/tickers/" + ticker # writes full ticker file to storage
-                #data.to_csv(data_file_loc)
+                data_file_loc = "storage/daily/tickers/" + ticker # writes full ticker file to storage
+                data.to_csv(data_file_loc, index='date')
             elif timeframe == "weekly":
                 data, _ = ts.get_weekly(ticker, outputsize='full')
                 data_file_loc = "SP500_weekly_data/" + ticker
@@ -80,8 +81,7 @@ def build_csv(ticker_lst, timeframe='daily', cols = ['open', 'high', 'low', 'clo
             bad_tickers.append(ticker)
         #need a function that names the columns in the technical indicators dataframes we've constructed
         time.sleep(1)
-    sma_df = fit_tech_to_df(tech_indicators_dict["SMA"], good_tickers)
-    print(sma_df)
+    write_all_features(tech_indicators_dict, features, good_tickers, timeframe)
     print(len(tech_indicators_dict["SMA"]))
     print(bad_tickers)
 
@@ -95,23 +95,26 @@ def tech_indicators_dict_initialize(features_lst, timeframe):
         tech_indicators_dict[feature] = [time_index]
     return tech_indicators_dict
 
+    
+
 def fit_tech_to_df(tech_data_lst, cols):
     tech_data_df = pd.DataFrame(tech_data_lst).transpose()
     tech_data_df.columns = ['date'] + cols
     tech_data_df = tech_data_df.set_index('date')
     return tech_data_df
 
+def write_all_features(tech_indicators_dict, features, good_tickers, timeframe):
+    for feature in features:
+        path = 'storage/' + timeframe + '/features/' + feature
+        print(path)
+        feature_df = fit_tech_to_df(tech_indicators_dict[feature], cols=good_tickers)
+        feature_df.to_csv(path)
 
 def correct_length(length, tech_data):
     if length > len(tech_data):
-        print(length)
-        print(len(tech_data))
         a = length - len(tech_data)
         empty_lst = [np.nan]*a
-        print('empty list', empty_lst)
         tot_lst = tech_data + empty_lst
-        print('tot lst')
-        print(tot_lst)
         return tot_lst
     elif length < len(tech_data):
         ind_lst = tech_data["SMA"].to_list()[:length]
