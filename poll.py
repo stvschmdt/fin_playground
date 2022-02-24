@@ -55,7 +55,8 @@ def build_csv(ticker_lst, timeframe='day', cols = ['open', 'high', 'low', 'close
         try:
             if timeframe == 'day':
                 data, _ = ts.get_daily(ticker, outputsize='full')
-                data_file_loc = "SP500_daily_data/" + ticker
+                # call function to add tech indicators to data file
+                data_file_loc = "SP500_daily_data/" + ticker # writes full ticker file to storage
             elif timeframe == "week":
                 data, _ = ts.get_weekly(ticker, outputsize='full')
                 data_file_loc = "SP500_weekly_data/" + ticker
@@ -87,6 +88,7 @@ def build_monthly(ticker_list):
 
 # scratchwork for technical indicators scraper function
 
+'''
 test_ticker_list = ['aon', 'mmm', 'aapl', 'msft', 'goog']
 
 for ticker in test_ticker_list:
@@ -108,6 +110,8 @@ for ticker in test_ticker_list:
     else:
         data["SMA"] = sma["SMA"].to_list()
     print(data)
+
+    '''
 
 if __name__ == "__main__":
    ticker_lst = get_tickers()
