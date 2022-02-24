@@ -56,7 +56,6 @@ def build_csv(ticker_lst, timeframe='day', cols = ['open', 'high', 'low', 'close
             if timeframe == 'day':
                 data, _ = ts.get_daily(ticker, outputsize='full')
                 data_file_loc = "SP500_daily_data/" + ticker
-                
             elif timeframe == "week":
                 data, _ = ts.get_weekly(ticker, outputsize='full')
                 data_file_loc = "SP500_weekly_data/" + ticker
@@ -85,25 +84,26 @@ def build_monthly(ticker_list):
 
 #want a function that takes a ticker and returns a column of data for a specific feature
 
-def add_tech_indicators(ticker_list):
-    
-    for split in ['daily', 'weekly', 'monthly']:
-        daily = pd.DataFrame()
-        weekly = pd.DataFrame()
-        monthly = pd.DataFrame()
-        for ticker in ticker_list:
-            data, _ = indicators.get_sma(ticker, interval=split)
-            daily = pd.merge(left=daily, right=data, on='date')
-            
-
-
 test_ticker_list = ['aon', 'mmm', 'aapl', 'msft', 'goog']
 
-sma_aapl, _ = indicators.get_sma('aapl', interval='daily')
+for ticker in test_ticker_list:
+    data, _ = ts.get_daily(ticker, outputsize='full')
+    sma, _ = indicators.get_sma('aapl', interval='daily')
+    print(type(data))
+    print(data.shape)
+    len_df = data.shape[0]
+    if len_df > len(sma):
+        a = len_df - len(sma)
+        empty_lst = ['NA']*a
+        empty_df = pd.Series(empty_lst)
+        b = pd.concat([sma, empty_df], axis=0)
+        print(b)
+
+        print('len b:', len(b))
 
 if __name__ == "__main__":
    ticker_lst = get_tickers()
-   build_csv(ticker_lst)
+   #build_csv(ticker_lst)
 
 # thinking about dataloader
 # separate file for last update either at dir level or file dict level
@@ -146,4 +146,5 @@ if __name__ == "__main__":
 # index, aon, mmm
 # 1, 45, 57
 # 2, 47, 55
+
 
