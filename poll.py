@@ -84,6 +84,9 @@ def build_monthly(ticker_list):
 
 #want a function that takes a ticker and returns a column of data for a specific feature
 
+
+# scratchwork for technical indicators scraper function
+
 test_ticker_list = ['aon', 'mmm', 'aapl', 'msft', 'goog']
 
 for ticker in test_ticker_list:
@@ -91,15 +94,20 @@ for ticker in test_ticker_list:
     sma, _ = indicators.get_sma('aapl', interval='daily')
     print(type(data))
     print(data.shape)
+    print(len(sma))
     len_df = data.shape[0]
     if len_df > len(sma):
+        print(sma)
         a = len_df - len(sma)
-        empty_lst = ['NA']*a
-        empty_df = pd.Series(empty_lst)
-        b = pd.concat([sma, empty_df], axis=0)
-        print(b)
-
-        print('len b:', len(b))
+        empty_lst = [np.nan]*a
+        tot_lst = sma["SMA"].to_list() + empty_lst
+        data["SMA"] = tot_lst
+    elif len_df < len(sma):
+        ind_lst = sma["SMA"].to_list()[:len_df]
+        data["SMA"] = ind_lst
+    else:
+        data["SMA"] = sma["SMA"].to_list()
+    print(data)
 
 if __name__ == "__main__":
    ticker_lst = get_tickers()
