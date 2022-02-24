@@ -52,6 +52,7 @@ def build_csv(ticker_lst, timeframe='day', cols = ['open', 'high', 'low', 'close
     # add in some appropriate reasonable time stamp
     count = 1
     bad_tickers = []
+    good_tickers = []
     for ticker in ticker_lst:
         try:
             if timeframe == 'day':
@@ -71,10 +72,10 @@ def build_csv(ticker_lst, timeframe='day', cols = ['open', 'high', 'low', 'close
                 print(data)
                 print(tech_indicators_dict)
 
-#this is where i stopped
+#this is where I stopped
 #need to add SMA into tech_indicators_dict
                 
-                tech_indicators_dict['SMA'][1] = sma['SMA'].to_list()
+                tech_indicators_dict['SMA'] = sma['SMA'].to_list()
                 data_file_loc = "storage/daily/tickers/" + ticker # writes full ticker file to storage
                 data.to_csv(data_file_loc)
                 print(tech_indicators_dict)
@@ -84,23 +85,17 @@ def build_csv(ticker_lst, timeframe='day', cols = ['open', 'high', 'low', 'close
             elif timeframe == "month":
                 data, _ = ts.get_monthly(ticker, outputsize='full')
                 data_file_loc = "SP500_monthly_data/" + ticker
+            good_tickers.append(ticker)
             data.to_csv(data_file_loc)
         except:
             bad_tickers.append(ticker)
+        #need a function that names the columns in the technical indicators dataframes we've constructed
         time.sleep(1)
         count += 1
     print(bad_tickers)
 
     # bad_tickers = ['AGN', 'APC', 'BBT', 'BF.B', 'COG', 'CBS', 'CXO', 'LB', 'MYL', 'RHT', 'COL', 'SCG', 'TMK', 'VAR', 'WLTW']
     # need to add date_time functionality to write a timestamp of when the function was run to a file
-
-def build_monthly(ticker_list):
-    sp_path = 'storage/monthly/SP500/'
-    for ticker in ticker_list:
-        basic_data, _ = ts.get_monthly(ticker, outputsize='full')
-        #function that loops through the tech indicators
-        #and then we add the columns, both to basic_data and the feature specific df
-        basic_data.to_csv(sp_path + ticker)
 
 def tech_indicators_dict_initialize(features_lst, timeframe):
     tech_indicators_dict = {}
@@ -112,19 +107,22 @@ def tech_indicators_dict_initialize(features_lst, timeframe):
 
 
 
-def correct_length(length, data):
-    if length > len(data):
+def correct_length(length, tech_data):
+    if length > len(tech_data):
         print(length)
-        print(len(data))
-        a = length - len(data)
+        print(len(tech_data))
+        a = length - len(tech_data)
         empty_lst = [np.nan]*a
         print('empty list', empty_lst)
-        tot_lst = data + empty_lst
+        tot_lst = tech_data + empty_lst
         print('tot lst')
         print(tot_lst)
         return tot_lst
+    elif length < len(tech_data):
+        ind_lst = tech_data["SMA"].to_list()[:length]
     else:
-        return data
+        ind_lst = tech_data["SMA"].to_list()
+    return ind_lst
 
 
 def date_getter(timeframe):
@@ -150,31 +148,6 @@ build_csv(['MMM'], timeframe='day', cols = ['open', 'high', 'low', 'close', 'vol
 
 
 # scratchwork for technical indicators scraper function
-
-'''
-test_ticker_list = ['aon', 'mmm', 'aapl', 'msft', 'goog']
-
-for ticker in test_ticker_list:
-    data, _ = ts.get_daily(ticker, outputsize='full')
-    sma, _ = indicators.get_sma('aapl', interval='daily')
-    print(type(data))
-    print(data.shape)
-    print(len(sma))
-    len_df = data.shape[0]
-    if len_df > len(sma):
-        print(sma)
-        a = len_df - len(sma)
-        empty_lst = [np.nan]*a
-        tot_lst = sma["SMA"].to_list() + empty_lst
-        data["SMA"] = tot_lst
-    elif len_df < len(sma):
-        ind_lst = sma["SMA"].to_list()[:len_df]
-        data["SMA"] = ind_lst
-    else:
-        data["SMA"] = sma["SMA"].to_list()
-    print(data)
-
-    '''
 
 if __name__ == "__main__":
    ticker_lst = get_tickers()
