@@ -47,6 +47,10 @@ class tech_indicators:
 #add the column to SP 500 folder and the csv for that feature
 #separate function for each timeframe?
 
+#technicals: SMA, EMA, WMA, MACD, STOCH, RSI, MOM, ROC, MFI, BANDS, MIDPRICE
+
+features =['SMA', 'EMA', 'WMA', 'MACD', 'STOCH', 'RSI', 'MOM', 'ROC', 'MFI', 'BANDS', 'MIDPRICE']
+
 def build_csv(ticker_lst, timeframe='daily', cols = ['open', 'high', 'low', 'close', 'volume']):
     # do a check for which one to read in
     # add in some appropriate reasonable time stamp
@@ -136,6 +140,12 @@ def date_getter(timeframe):
         return
     return np.array(data.index)
 
+def get_sp500_tickers():
+    tables = pd.read_html('https://en.wikipedia.org/wiki/List_of_S%26P_500_companies')
+    sp500 = tables[0]
+    print(sp500['Symbol'].to_list())
+    return sp500['Symbol'].to_list()
+
 #print(date_getter('daily'))
 #print(tech_indicators_dict_initialize(['SMA'], 'daily'))
 
@@ -146,8 +156,11 @@ def date_getter(timeframe):
 # scratchwork for technical indicators scraper function
 
 if __name__ == "__main__":
-   ticker_lst = get_tickers()
-   build_csv(ticker_lst)
+    tickers = get_sp500_tickers()
+   #ticker_lst = get_tickers()
+   #build_csv(ticker_lst)
+   
+
 
 # thinking about dataloader
 # separate file for last update either at dir level or file dict level
