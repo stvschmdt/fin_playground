@@ -49,7 +49,7 @@ class tech_indicators:
 
 #technicals: SMA, EMA, WMA, MACD, STOCH, RSI, MOM, ROC, MFI, BANDS, MIDPRICE
 
-features =['SMA', 'EMA', 'WMA', 'MACD', 'STOCH', 'RSI', 'MOM', 'ROC', 'MFI', 'BBANDS', 'MIDPRICE']
+features = ['SMA', 'EMA', 'WMA', 'MACD', 'STOCH', 'RSI', 'MOM', 'ROC', 'MFI', 'BBANDS', 'MIDPRICE']
 
 def build_csv(ticker_lst, timeframe='daily', cols = ['open', 'high', 'low', 'close', 'volume']):
     # do a check for which one to read in
@@ -89,8 +89,12 @@ def build_csv(ticker_lst, timeframe='daily', cols = ['open', 'high', 'low', 'clo
                 print('made macd', ticker)
                 
                 stoch, _ = indicators.get_stoch(ticker, timeframe)
-                data['STOCH'] = correct_length(length, stoch['STOCH'].to_list())
-                tech_indicators_dict['STOCH'].append(stoch['STOCH'].to_list())
+                data['SLOWD'] = correct_length(length, stoch['SlowD'].to_list())
+                data['SLOWK'] = correct_length(length, stoch['SlowK'].to_list())
+                print(stoch)
+                tech_indicators_dict['STOCH'].append(stoch.values)
+                #values are appended in as a list of lists, where the first term
+                #is SlowD and the second term is SlowK: (SlowD, SlowK)
                 print('made stoch', ticker)
 
                 rsi, _ = indicators.get_rsi(ticker, timeframe)
@@ -114,20 +118,22 @@ def build_csv(ticker_lst, timeframe='daily', cols = ['open', 'high', 'low', 'clo
                 print('made mfi', ticker)
 
                 bbands, _ = indicators.get_bbands(ticker, timeframe)
-                data['BBANDS'] = correct_length(length, bbands['BBANDS'].to_list())
-                tech_indicators_dict['BBANDS'].append(bbands['BBANDS'].to_list())
+                print(bbands)
+                data['LBAND'] = correct_length(length, bbands['Real Lower Band'].to_list())
+                data['UBAND'] = correct_length(length, bbands['Real Upper Band'].to_list())
+                data['MBAND'] = correct_length(length, bbands['Real Middle Band'].to_list())
+                tech_indicators_dict['BBANDS'].append(bbands.values)
+                # First term in list of values is LBand, then UBand, then MBand: (LBand, UBand, MBand)
                 print('made bbands', ticker)
 
                 midprice, _ = indicators.get_midprice(ticker, timeframe)
+                print(midprice)
                 data['MIDPRICE'] = correct_length(length, midprice['MIDPRICE'].to_list())
                 tech_indicators_dict['MIDPRICE'].append(midprice['MIDPRICE'].to_list())
                 print('made midprice', ticker)
 
                 print('made feature dict')
 
-
-
-                
                 
                 data_file_loc = "storage/daily/tickers/" + ticker # writes full ticker file to storage
                 data.to_csv(data_file_loc, index='date')
