@@ -7,3 +7,4 @@
 
 
 python poll.py
+tar cvf storage/daily.tar storage/daily/
