@@ -1,10 +1,8 @@
-#import sys
-
-# fyi
-#print sys.argv[0] # prints python_script.py
-#print sys.argv[1] # prints var1
-#print sys.argv[2] # prints var2
-
-
-python poll.py
-tar cvf storage/daily.tar storage/daily/
+if [[ $1 != "setup" ]]; then
+ 	echo "polling alphavantage api" $(date -u)
+	python src/poll.py
+ 	tar cvf daily.tar storage/daily/
+else
+ 	echo "setting up storage/daily/ tarball"
+	tar xvf daily.tar
+fi
