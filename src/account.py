@@ -152,5 +152,5 @@ if __name__ == '__main__':
     acc.buy('soxl', 3,  soxl, False)
     print(acc.get_holdings())
     print(acc.get_history())
-    acc.view_balance_history()
+    #acc.view_balance_history()
 
