@@ -14,6 +14,10 @@ import csv
 import os
 import time
 from datetime import datetime
+# custom imports
+import logger
+
+logger = logger.Logging()
 
 today = datetime.today().strftime('%Y-%m-%d')
 
@@ -146,6 +150,7 @@ def build_csv(ticker_lst, timeframe='daily', cols = ['open', 'high', 'low', 'clo
             good_tickers.append(ticker)
         except:
             bad_tickers.append(ticker)
+            return -1
         #need a function that names the columns in the technical indicators dataframes we've constructed
         time.sleep(1)
     print('begin writing')
@@ -153,6 +158,7 @@ def build_csv(ticker_lst, timeframe='daily', cols = ['open', 'high', 'low', 'clo
     print('finish writing')
     print(len(tech_indicators_dict["SMA"]))
     print(bad_tickers)
+    return 0
 
     # bad_tickers = ['AGN', 'APC', 'BBT', 'BF.B', 'COG', 'CBS', 'CXO', 'LB', 'MYL', 'RHT', 'COL', 'SCG', 'TMK', 'VAR', 'WLTW']
     # need to add date_time functionality to write a timestamp of when the function was run to a file
@@ -215,10 +221,12 @@ def get_sp500_tickers():
 build_csv(ticker_lst=["AAPL", "MMM", "ZION", "ZTS", "XRX"])
 
 if __name__ == "__main__":
+    
     print('hi')
     #tickers = get_sp500_tickers()
     #ticker_lst = get_tickers()
     #build_csv(ticker_lst)
+    
 
 #print(date_getter('daily'))
 #print(tech_indicators_dict_initialize(['SMA'], 'daily'))
