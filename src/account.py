@@ -127,7 +127,7 @@ class Account(object):
                 self.history['sell'].append( (asset, quantity, price) )
                 self.history['action'].append('sell')
                 self.log.info('sold {} of {} at {}'.format(quantity, asset, price))
-        return quantity
+        return self.holdings[asset]
 
 
     def buys(self, assets, quantities, prices, info=None):
