@@ -23,7 +23,7 @@ storage/daily/
 *.iso
 *.jar
 *.rar
-*.tar
+# *.tar
 *.zip
 
 
