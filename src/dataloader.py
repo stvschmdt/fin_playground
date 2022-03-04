@@ -16,7 +16,16 @@ import os
 import time
 from datetime import datetime
 
+
+#this function allows you to select data from cold storage
 def build_dicts(ticker_lst, feature_lst, timeframe, start_date, end_date):
+    valid_dates = get_valid_dates(timeframe)
+    if start_date not in valid_dates:
+        print('start date not valid')
+        return 0
+    if end_date not in valid_dates:
+        print('end dates not valid')
+        return 0
     path = 'storage/' + timeframe
     dictionary = {'tickers' : {}, 'features' : {}}
     for ticker in ticker_lst:
@@ -38,8 +47,17 @@ def build_dicts(ticker_lst, feature_lst, timeframe, start_date, end_date):
         dictionary['features'][feature] = data
     print(dictionary['tickers'].keys())
     print(dictionary['features'].keys())
+    print(dictionary)
+    return dictionary
+
+#function returns a list of valid dates
+def get_valid_dates(timeframe):
+    path = 'storage/' + timeframe + '/tickers/AAPL'
+    data = pd.read_csv(path)
+    return data['date'].to_list()
+
 
 # write functionality to check if the date entered for start or end date was a weekend
 
 if __name__ == "__main__":
-    build_dicts(["AAPL", "MMM", "ZION", "ZTS", "XRX", "TSLA"], ['SMA', 'EMA', 'WMA', 'MACD', 'STOCH', 'RSI', 'MOM', 'ROC', 'MFI', 'BBANDS', 'MIDPRICE'], "daily", "2004-11-05", "2020-12-12")
+    build_dicts(["AAPL", "MMM", "ZION", "ZTS", "XRX", "TSLA"], ['SMA', 'EMA', 'WMA', 'MACD', 'STOCH', 'RSI', 'MOM', 'ROC', 'MFI', 'BBANDS', 'MIDPRICE'], "daily", "2004-11-05", "2020-12-14")
