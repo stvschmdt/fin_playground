@@ -21,7 +21,7 @@ logger = logger.Logging()
 
 today = datetime.today().strftime('%Y-%m-%d')
 
-API_key = '599NW2X84IZN5W1U'
+API_key = ''
 
 #sp_names = pd.read_csv('constituents_csv.csv')
 #sp_financials = pd.read_csv('constituents-financials_csv.csv')
@@ -55,7 +55,8 @@ class tech_indicators:
 
 features = ['SMA', 'EMA', 'WMA', 'MACD', 'STOCH', 'RSI', 'MOM', 'ROC', 'MFI', 'BBANDS', 'MIDPRICE']
 
-def build_csv(ticker_lst, timeframe='daily', cols = ['open', 'high', 'low', 'close', 'volume']):
+def build_csv(ticker_lst, timeframe='daily', cols = ['open', 'high', 'low', 'close',
+                                                     'adj_close', 'volume', 'dividend', 'split_coeff']):
     # do a check for which one to read in
     # add in some appropriate reasonable time stamp
     bad_tickers = []
@@ -65,8 +66,8 @@ def build_csv(ticker_lst, timeframe='daily', cols = ['open', 'high', 'low', 'clo
     for ticker in ticker_lst:
         try:
             if timeframe == 'daily':
-                data, _ = ts.get_daily(ticker, outputsize='full')
-                data.columns = ['open', 'high', 'low', 'close', 'volume']
+                data, _ = ts.get_daily_adjusted(ticker, outputsize='full')
+                data.columns = cols
                 length = data.shape[0]
                 
                 #begin adding tech indicators here
@@ -167,9 +168,7 @@ def tech_indicators_dict_initialize(features_lst, timeframe):
     time_index = date_getter(timeframe)
     for feature in features_lst:
         tech_indicators_dict[feature] = [time_index]
-    return tech_indicators_dict
-
-    
+    return tech_indicators_dict  
 
 def fit_tech_to_df(tech_data_lst, cols):
     tech_data_df = pd.DataFrame(tech_data_lst).transpose()
@@ -200,7 +199,7 @@ def correct_length(length, tech_data):
 def date_getter(timeframe):
     print(timeframe)
     if timeframe == 'daily':
-        data, _ = ts.get_daily(symbol='MMM', outputsize='full')
+        data, _ = ts.get_daily_adjusted(symbol='MMM', outputsize='full')
     elif timeframe == 'weekly':
         data, _ = ts.get_weekly(symbol='MMM')
     elif timeframe == 'monthly':
@@ -216,8 +215,7 @@ def get_sp500_tickers():
     print(sp500['Symbol'].to_list())
     return sp500['Symbol'].to_list()
 
-
-print(build_csv(ticker_lst=["AAPL", "MMM", "ZION", "ZTS", "XRX"]))
+print(build_csv(ticker_lst=["AAPL", "MMM", "XRX", "ZION", "ZTS", "TSLA"]))
 
 if __name__ == "__main__":
     
