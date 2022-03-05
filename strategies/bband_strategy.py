@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 import csv 
 
+from ..src import Account
 
 class BBand(object):
 
@@ -25,8 +26,26 @@ class BBand(object):
         self.data = data
         return self.data
 
+    def upper_hit(self, row):
+        if row[1].close > row[1].UBAND:
+            return 1
+        else:
+            return 0
+
+    def lower_hit(self, row):
+        if row[1].close < row[1].LBAND:
+            return 1
+        else:
+            return 0
 
 
+    def walkthrough(self, data, start, end):
+        df = data[(data.date >=start) & (data.date <= end)]
+        for i in df.iterrows():
+            if i[1].close > i[1].UBAND:
+                print(i[0])
+            elif i[1].close < i[1].LBAND:
+                print(i[0])
 
 
 if __name__ == '__main__':
@@ -34,4 +53,5 @@ if __name__ == '__main__':
     print(sim.portfolio)
     sim.get_portfolio_data()
     print(len(sim.data))
-    print(len(sim.data[0]))
+    print(sim.data[0])
+    sim.walkthrough(sim.data[0], "2020-01-01", "2022-02-10")
