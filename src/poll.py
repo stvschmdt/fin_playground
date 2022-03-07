@@ -29,21 +29,22 @@ API_key = ''
 ts = TimeSeries(key=API_key, output_format='pandas')
 indicators = ti.TechIndicators(key=API_key, output_format='pandas')
 
-def get_tickers():
-    sp_names = pd.read_csv('constituents_csv.csv')
-    ticker_symbols = [ sym for sym in sp_names.Symbol ]
-    return ticker_symbols
 
-def industry_dict():
-    sp_financials = pd.read_csv('constituents-financials_csv.csv')
-    sector_dict = {}
-    for i,j in zip(sp_financials.Symbol, sp_financials.Sector):
-        sector_dict[i] = j
-    return sector_dict
 
-class tech_indicators:
-    def init(self):
-        pass
+# ---- econ indicators
+#directory is storage/econ_indicators/econ_indicator
+#then annual, daily, monthly, weekly, daily within it
+#figure out the timeframes for econ data and begin pulling it
+
+
+
+# ---- fundamental data
+#most are annual and quarterly, but some are not
+#could do storage/fundamental/annual/feature, or could do same structure as econ indicators
+#I'm inclined towards the second
+#storage/fundamental/annual/feature leads to a csv where tickers are columns and rows are the feature
+
+
 
 #loop through tickers
 #add basic price data to SP 500 folder
