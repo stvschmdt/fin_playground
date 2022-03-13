@@ -23,7 +23,7 @@ logger = logger.Logging()
 
 today = datetime.today().strftime('%Y-%m-%d')
 
-API_key = '599NW2X84IZN5W1U'
+API_key = ''
 
 #sp_names = pd.read_csv('constituents_csv.csv')
 #sp_financials = pd.read_csv('constituents-financials_csv.csv')
