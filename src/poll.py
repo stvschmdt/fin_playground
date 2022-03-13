@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 from alpha_vantage.timeseries import TimeSeries
 import alpha_vantage.techindicators as ti
 import alpha_vantage.cryptocurrencies as cc
+import alpha_vantage.fundamentaldata as fd
 import collections
 import csv
 import os
@@ -21,22 +22,20 @@ logger = logger.Logging()
 
 today = datetime.today().strftime('%Y-%m-%d')
 
-API_key = ''
+API_key = '599NW2X84IZN5W1U'
 
 #sp_names = pd.read_csv('constituents_csv.csv')
 #sp_financials = pd.read_csv('constituents-financials_csv.csv')
 
 ts = TimeSeries(key=API_key, output_format='pandas')
 indicators = ti.TechIndicators(key=API_key, output_format='pandas')
-
+fundamentals = fd.FundamentalData(key=API_key, output_format='pandas')
 
 
 # ---- econ indicators
 #directory is storage/econ_indicators/econ_indicator
 #then annual, daily, monthly, weekly, daily within it
 #figure out the timeframes for econ data and begin pulling it
-
-
 
 # ---- fundamental data
 #most are annual and quarterly, but some are not
@@ -54,7 +53,7 @@ indicators = ti.TechIndicators(key=API_key, output_format='pandas')
 
 #technicals: SMA, EMA, WMA, MACD, STOCH, RSI, MOM, ROC, MFI, BANDS, MIDPRICE
 
-features = ['SMA', 'EMA', 'WMA', 'MACD', 'STOCH', 'RSI', 'MOM', 'ROC', 'MFI', 'BBANDS', 'MIDPRICE']
+ticker_lst = ["AAPL", "MMM", "XRX", "ZION", "ZTS"]
 
 def build_csv(ticker_lst, timeframe='daily', cols = ['open', 'high', 'low', 'close',
                                                      'adj_close', 'volume', 'dividend', 'split_coeff']):
@@ -216,11 +215,34 @@ def get_sp500_tickers():
     print(sp500['Symbol'].to_list())
     return sp500['Symbol'].to_list()
 
-print(build_csv(ticker_lst=["AAPL", "MMM", "XRX", "ZION", "ZTS", "TSLA"]))
+def build_fundamental_data(ticker_lst):
+    for ticker in ticker_lst:
+        quarterly_income_statement = fundamentals.get_income_statement_quarterly(ticker)[0]
+        annual_income_statement = fundamentals.get_income_statement_annual(ticker)[0]
+        quarterly_balance_sheet = fundamentals.get_balance_sheet_quarterly(ticker)[0]
+        annual_balance_sheet = fundamentals.get_balance_sheet_annual(ticker)[0]
+        quarterly_cash_flow = fundamentals.get_cash_flow_quarterly(ticker)[0]
+        annual_cash_flow = fundamentals.get_cash_flow_annual(ticker)[0]
+        company_overview = fundamentals.get_company_overview(ticker)[0]
+        quarterly_income_statement_file_loc = "storage/fundamental_data/annual/income_statement/" + ticker
+        quarterly_income_statement.to_csv(quarterly_income_statement_file_loc, index='date')
+        annual_income_statement_file_loc = "storage/fundamental_data/quarterly/income_statement/" + ticker
+        annual_income_statement.to_csv(annual_income_statement_file_loc, index='date')
+        quarterly_balance_sheet_file_loc = "storage/fundamental_data/annual/balance_sheet/" + ticker
+        quarterly_balance_sheet.to_csv(quarterly_balance_sheet_file_loc, index='date')
+        annual_balance_sheet_file_loc = "storage/fundamental_data/quarterly/balance_sheet/" + ticker
+        annual_balance_sheet.to_csv(annual_balance_sheet_file_loc, index='date')
+        quarterly_cash_flow_file_loc = "storage/fundamental_data/annual/cash_flow/" + ticker
+        quarterly_cash_flow.to_csv(quarterly_cash_flow_file_loc, index='date')
+        annual_cash_flow_file_loc = "storage/fundamental_data/quarterly/cash_flow/" + ticker
+        annual_cash_flow.to_csv(annual_cash_flow_file_loc, index='date')
+        company_overview_file_loc = "storage/fundamental_data/company_overview/" + ticker
+        company_overview.to_csv(company_overview_file_loc, index='date')
+
+#print(build_csv(ticker_lst=["AAPL", "MMM", "XRX", "ZION", "ZTS", "TSLA"]))
 
 if __name__ == "__main__":
-    
-    print('hi')
+    build_fundamental_data(ticker_lst)
     #tickers = get_sp500_tickers()
     #ticker_lst = get_tickers()
     #build_csv(ticker_lst)
