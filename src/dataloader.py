@@ -14,8 +14,12 @@ import collections
 import csv
 import os
 import time
+from pathlib import Path
 from datetime import datetime
 
+abspath = os.path.abspath(os.getcwd())
+finpath = Path(abspath).resolve().parent
+parent_path = str(finpath) + '/'
 
 #this function allows you to select data from cold storage
 def build_ticker_dicts(ticker_lst, timeframe, start_date, end_date):
@@ -26,7 +30,7 @@ def build_ticker_dicts(ticker_lst, timeframe, start_date, end_date):
     if end_date not in valid_dates:
         print('end dates not valid')
         return 0
-    path = 'storage/' + timeframe
+    path = parent_path + 'storage/' + timeframe
     dictionary = {'tickers' : {}}
     for ticker in ticker_lst:
         path1 = path + '/tickers/' + ticker
@@ -48,7 +52,7 @@ def build_feature_dicts(feature_lst, timeframe, start_date, end_date):
     if end_date not in valid_dates:
         print('end dates not valid')
         return 0
-    path = 'storage/' + timeframe
+    path = parent_path + 'storage/' + timeframe
     for feature in feature_lst:
         path2 = path + '/features/' + feature
         data = pd.read_csv(path2)
