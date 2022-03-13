@@ -18,7 +18,7 @@ from datetime import datetime
 
 
 #this function allows you to select data from cold storage
-def build_dicts(ticker_lst, feature_lst, timeframe, start_date, end_date):
+def build_ticker_dicts(ticker_lst, timeframe, start_date, end_date):
     valid_dates = get_valid_dates(timeframe)
     if start_date not in valid_dates:
         print('start date not valid')
@@ -27,7 +27,7 @@ def build_dicts(ticker_lst, feature_lst, timeframe, start_date, end_date):
         print('end dates not valid')
         return 0
     path = 'storage/' + timeframe
-    dictionary = {'tickers' : {}, 'features' : {}}
+    dictionary = {'tickers' : {}}
     for ticker in ticker_lst:
         path1 = path + '/tickers/' + ticker
         data = pd.read_csv(path1)
@@ -38,6 +38,17 @@ def build_dicts(ticker_lst, feature_lst, timeframe, start_date, end_date):
             new_df = data.dropna()
             if new_df.shape == old_shape:
                 dictionary['tickers'][ticker] = new_df
+
+def build_feature_dicts(feature_lst, timeframe, start_date, end_date):
+    valid_dates = get_valid_dates(timeframe)
+    dictionary = {'features' : {}}
+    if start_date not in valid_dates:
+        print('start date not valid')
+        return 0
+    if end_date not in valid_dates:
+        print('end dates not valid')
+        return 0
+    path = 'storage/' + timeframe
     for feature in feature_lst:
         path2 = path + '/features/' + feature
         data = pd.read_csv(path2)
@@ -45,9 +56,6 @@ def build_dicts(ticker_lst, feature_lst, timeframe, start_date, end_date):
         data = data.loc[end_date:start_date]
         data = data.dropna('columns')
         dictionary['features'][feature] = data
-    print(dictionary['tickers'].keys())
-    print(dictionary['features'].keys())
-    print(dictionary)
     return dictionary
 
 #function returns a list of valid dates
