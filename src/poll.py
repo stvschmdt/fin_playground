@@ -15,6 +15,7 @@ import csv
 import os
 import time
 from datetime import datetime
+from pathlib import Path
 # custom imports
 import logger
 
@@ -27,10 +28,13 @@ API_key = '599NW2X84IZN5W1U'
 #sp_names = pd.read_csv('constituents_csv.csv')
 #sp_financials = pd.read_csv('constituents-financials_csv.csv')
 
+abspath = os.path.abspath(os.getcwd())
+finpath = Path(abspath).resolve().parent
+
 ts = TimeSeries(key=API_key, output_format='pandas')
 indicators = ti.TechIndicators(key=API_key, output_format='pandas')
 fundamentals = fd.FundamentalData(key=API_key, output_format='pandas')
-
+crypto = cc.CryptoCurrencies(key=API_key, output_format='pandas')
 
 # ---- econ indicators
 #directory is storage/econ_indicators/econ_indicator
@@ -139,7 +143,7 @@ def build_csv(ticker_lst, timeframe='daily', cols = ['open', 'high', 'low', 'clo
                 print('made feature dict')
 
                 
-                data_file_loc = "storage/daily/tickers/" + ticker # writes full ticker file to storage
+                data_file_loc = str(finpath) + "/storage/daily/tickers/" + ticker # writes full ticker file to storage
                 data.to_csv(data_file_loc, index='date')
             elif timeframe == "weekly":
                 data, _ = ts.get_weekly(ticker, outputsize='full')
@@ -178,7 +182,7 @@ def fit_tech_to_df(tech_data_lst, cols):
 
 def write_all_features(tech_indicators_dict, features, good_tickers, timeframe):
     for feature in features:
-        path = 'storage/' + timeframe + '/features/' + feature
+        path = str(finpath) + '/storage/' + timeframe + '/features/' + feature
         print(path)
         feature_df = fit_tech_to_df(tech_indicators_dict[feature], cols=good_tickers)
         feature_df.to_csv(path)
@@ -215,6 +219,25 @@ def get_sp500_tickers():
     print(sp500['Symbol'].to_list())
     return sp500['Symbol'].to_list()
 
+def get_coins():
+    filepath = str(finpath) + '/digital_currency_list.csv'
+    tables = pd.read_csv(filepath)
+    currency_lst = tables["currency code"].to_list()
+    return currency_lst
+
+def build_crypto_csvs(currency_lst, timeframe='daily', cols = ['open', 'open 2', 'high', 'high 2', 'low', 'low 2',
+                                            'close', 'close 2', 'volume', 'market cap']):
+    parent_path = str(finpath)
+    market = "USD"
+    currency_lst = ["BTC"] #stopgap line for testing, will delete later
+    for currency in currency_lst:
+        if timeframe == 'daily':
+            data = crypto.get_digital_currency_daily(currency, market)[0]
+            data.columns = cols
+            data = data.drop(['open 2', 'high 2', 'low 2', 'close 2'], axis=1)
+        filepath = parent_path + '/storage/' + timeframe + '/cryptocurrencies/' + currency
+        data.to_csv(filepath)
+
 def build_fundamental_data(ticker_lst):
     for ticker in ticker_lst:
         quarterly_income_statement = fundamentals.get_income_statement_quarterly(ticker)[0]
@@ -224,19 +247,19 @@ def build_fundamental_data(ticker_lst):
         quarterly_cash_flow = fundamentals.get_cash_flow_quarterly(ticker)[0]
         annual_cash_flow = fundamentals.get_cash_flow_annual(ticker)[0]
         company_overview = fundamentals.get_company_overview(ticker)[0]
-        quarterly_income_statement_file_loc = "storage/fundamental_data/annual/income_statement/" + ticker
+        quarterly_income_statement_file_loc = str(finpath) + "/storage/fundamental_data/annual/income_statement/" + ticker
         quarterly_income_statement.to_csv(quarterly_income_statement_file_loc, index='date')
-        annual_income_statement_file_loc = "storage/fundamental_data/quarterly/income_statement/" + ticker
+        annual_income_statement_file_loc = str(finpath) + "/storage/fundamental_data/quarterly/income_statement/" + ticker
         annual_income_statement.to_csv(annual_income_statement_file_loc, index='date')
-        quarterly_balance_sheet_file_loc = "storage/fundamental_data/annual/balance_sheet/" + ticker
+        quarterly_balance_sheet_file_loc = str(finpath) + "/storage/fundamental_data/annual/balance_sheet/" + ticker
         quarterly_balance_sheet.to_csv(quarterly_balance_sheet_file_loc, index='date')
-        annual_balance_sheet_file_loc = "storage/fundamental_data/quarterly/balance_sheet/" + ticker
+        annual_balance_sheet_file_loc = str(finpath) + "/storage/fundamental_data/quarterly/balance_sheet/" + ticker
         annual_balance_sheet.to_csv(annual_balance_sheet_file_loc, index='date')
-        quarterly_cash_flow_file_loc = "storage/fundamental_data/annual/cash_flow/" + ticker
+        quarterly_cash_flow_file_loc = str(finpath) + "/storage/fundamental_data/annual/cash_flow/" + ticker
         quarterly_cash_flow.to_csv(quarterly_cash_flow_file_loc, index='date')
-        annual_cash_flow_file_loc = "storage/fundamental_data/quarterly/cash_flow/" + ticker
+        annual_cash_flow_file_loc = str(finpath) + "/storage/fundamental_data/quarterly/cash_flow/" + ticker
         annual_cash_flow.to_csv(annual_cash_flow_file_loc, index='date')
-        company_overview_file_loc = "storage/fundamental_data/company_overview/" + ticker
+        company_overview_file_loc = str(finpath) + "/storage/fundamental_data/company_overview/" + ticker
         company_overview.to_csv(company_overview_file_loc, index='date')
 
 #print(build_csv(ticker_lst=["AAPL", "MMM", "XRX", "ZION", "ZTS", "TSLA"]))
@@ -245,7 +268,10 @@ if __name__ == "__main__":
     build_fundamental_data(ticker_lst)
     #tickers = get_sp500_tickers()
     #ticker_lst = get_tickers()
-    #build_csv(ticker_lst)
+    #build_csv()
+    currency_lst = get_coins()
+    build_crypto_csvs(currency_lst)
+    get_coins()
     
 
 #print(date_getter('daily'))
