@@ -33,7 +33,7 @@ finpath = Path(abspath).resolve().parent
 api_path = str(finpath) + '/api_key.txt'
 with open(api_path) as f:
     API_key = f.readlines()[0]
-
+    API_key = API_key.strip('\n')
 ts = TimeSeries(key=API_key, output_format='pandas')
 indicators = ti.TechIndicators(key=API_key, output_format='pandas')
 fundamentals = fd.FundamentalData(key=API_key, output_format='pandas')
@@ -304,10 +304,15 @@ def build_fundamental_data(ticker_lst):
 
 if __name__ == "__main__":
     ticker_lst = get_sp500_tickers()
+    print('ticker list read')
     currency_lst = get_coins()
+    print('coin list read')
     build_csv(ticker_lst)
+    print('ticker csvs built')
     build_fundamental_data(ticker_lst)
+    print('fundamentals built')
     build_crypto_csvs(currency_lst)
+    print('coins built')
     
 
 #print(date_getter('daily'))
