@@ -16,6 +16,7 @@ import os
 import time
 from datetime import datetime
 from pathlib import Path
+from datetime import datetime
 # custom imports
 import logger
 
@@ -23,13 +24,15 @@ logger = logger.Logging()
 
 today = datetime.today().strftime('%Y-%m-%d')
 
-API_key = ''
-
 #sp_names = pd.read_csv('constituents_csv.csv')
 #sp_financials = pd.read_csv('constituents-financials_csv.csv')
 
 abspath = os.path.abspath(os.getcwd())
 finpath = Path(abspath).resolve().parent
+
+api_path = str(finpath) + '/api_key.txt'
+with open(api_path) as f:
+    API_key = f.readlines()[0]
 
 ts = TimeSeries(key=API_key, output_format='pandas')
 indicators = ti.TechIndicators(key=API_key, output_format='pandas')
@@ -57,7 +60,7 @@ crypto = cc.CryptoCurrencies(key=API_key, output_format='pandas')
 
 #technicals: SMA, EMA, WMA, MACD, STOCH, RSI, MOM, ROC, MFI, BANDS, MIDPRICE
 
-ticker_lst = ["AAPL", "MMM", "XRX", "ZION", "ZTS"]
+#ticker_lst = ["AAPL", "MMM", "XRX", "ZION", "ZTS"]
 
 def build_csv(ticker_lst, timeframe='daily', cols = ['open', 'high', 'low', 'close',
                                                      'adj_close', 'volume', 'dividend', 'split_coeff']):
@@ -67,6 +70,8 @@ def build_csv(ticker_lst, timeframe='daily', cols = ['open', 'high', 'low', 'clo
     good_tickers = []
     features = ['SMA', 'EMA', 'WMA', 'MACD', 'STOCH', 'RSI', 'MOM', 'ROC', 'MFI', 'BBANDS', 'MIDPRICE']
     tech_indicators_dict = tech_indicators_dict_initialize(features, timeframe)
+    count = 0
+    start_t = time.time()
     for ticker in ticker_lst:
         try:
             if timeframe == 'daily':
@@ -156,7 +161,13 @@ def build_csv(ticker_lst, timeframe='daily', cols = ['open', 'high', 'low', 'clo
             bad_tickers.append(ticker)
             return -1
         #need a function that names the columns in the technical indicators dataframes we've constructed
-        time.sleep(1)
+        count += 12
+        if count > 63:
+            end_t = time.time()
+            time_diff = int(end_t - start_t)
+            time.sleep(61 - time_diff)
+            count = 0
+            start_t = time.time()
     print('begin writing')
     write_all_features(tech_indicators_dict, features, good_tickers, timeframe)
     print('finish writing')
@@ -229,49 +240,74 @@ def build_crypto_csvs(currency_lst, timeframe='daily', cols = ['open', 'open 2',
                                             'close', 'close 2', 'volume', 'market cap']):
     parent_path = str(finpath)
     market = "USD"
-    currency_lst = ["BTC"] #stopgap line for testing, will delete later
+    count = 0
+    start_t = time.time()
+    bad_currencies = []
+    currency_lst = ['BTC']
     for currency in currency_lst:
-        if timeframe == 'daily':
-            data = crypto.get_digital_currency_daily(currency, market)[0]
-            data.columns = cols
-            data = data.drop(['open 2', 'high 2', 'low 2', 'close 2'], axis=1)
-        filepath = parent_path + '/storage/' + timeframe + '/cryptocurrencies/' + currency
-        data.to_csv(filepath)
+        try:
+            if timeframe == 'daily':
+                data = crypto.get_digital_currency_daily(currency, market)[0]
+                data.columns = cols
+                data = data.drop(['open 2', 'high 2', 'low 2', 'close 2'], axis=1)
+            filepath = parent_path + '/storage/' + timeframe + '/cryptocurrencies/' + currency
+            data.to_csv(filepath)
+            count += 1
+        except:
+            bad_currencies.append(currency)
+        if count > 70:
+            end_t = time.time()
+            time_diff = int(end_t - start_t)
+            time.sleep(61 - time_diff)
+            count = 0
+            start_t = time.time()
+    print(bad_currencies)
 
 def build_fundamental_data(ticker_lst):
+    count = 0
+    start_t = time.time()
+    bad_tickers = []
     for ticker in ticker_lst:
-        quarterly_income_statement = fundamentals.get_income_statement_quarterly(ticker)[0]
-        annual_income_statement = fundamentals.get_income_statement_annual(ticker)[0]
-        quarterly_balance_sheet = fundamentals.get_balance_sheet_quarterly(ticker)[0]
-        annual_balance_sheet = fundamentals.get_balance_sheet_annual(ticker)[0]
-        quarterly_cash_flow = fundamentals.get_cash_flow_quarterly(ticker)[0]
-        annual_cash_flow = fundamentals.get_cash_flow_annual(ticker)[0]
-        company_overview = fundamentals.get_company_overview(ticker)[0]
-        quarterly_income_statement_file_loc = str(finpath) + "/storage/fundamental_data/annual/income_statement/" + ticker
-        quarterly_income_statement.to_csv(quarterly_income_statement_file_loc, index='date')
-        annual_income_statement_file_loc = str(finpath) + "/storage/fundamental_data/quarterly/income_statement/" + ticker
-        annual_income_statement.to_csv(annual_income_statement_file_loc, index='date')
-        quarterly_balance_sheet_file_loc = str(finpath) + "/storage/fundamental_data/annual/balance_sheet/" + ticker
-        quarterly_balance_sheet.to_csv(quarterly_balance_sheet_file_loc, index='date')
-        annual_balance_sheet_file_loc = str(finpath) + "/storage/fundamental_data/quarterly/balance_sheet/" + ticker
-        annual_balance_sheet.to_csv(annual_balance_sheet_file_loc, index='date')
-        quarterly_cash_flow_file_loc = str(finpath) + "/storage/fundamental_data/annual/cash_flow/" + ticker
-        quarterly_cash_flow.to_csv(quarterly_cash_flow_file_loc, index='date')
-        annual_cash_flow_file_loc = str(finpath) + "/storage/fundamental_data/quarterly/cash_flow/" + ticker
-        annual_cash_flow.to_csv(annual_cash_flow_file_loc, index='date')
-        company_overview_file_loc = str(finpath) + "/storage/fundamental_data/company_overview/" + ticker
-        company_overview.to_csv(company_overview_file_loc, index='date')
-
-#print(build_csv(ticker_lst=["AAPL", "MMM", "XRX", "ZION", "ZTS", "TSLA"]))
+        try:
+            quarterly_income_statement = fundamentals.get_income_statement_quarterly(ticker)[0]
+            annual_income_statement = fundamentals.get_income_statement_annual(ticker)[0]
+            quarterly_balance_sheet = fundamentals.get_balance_sheet_quarterly(ticker)[0]
+            annual_balance_sheet = fundamentals.get_balance_sheet_annual(ticker)[0]
+            quarterly_cash_flow = fundamentals.get_cash_flow_quarterly(ticker)[0]
+            annual_cash_flow = fundamentals.get_cash_flow_annual(ticker)[0]
+            company_overview = fundamentals.get_company_overview(ticker)[0]
+            quarterly_income_statement_file_loc = str(finpath) + "/storage/fundamental_data/annual/income_statement/" + ticker
+            quarterly_income_statement.to_csv(quarterly_income_statement_file_loc, index='date')
+            annual_income_statement_file_loc = str(finpath) + "/storage/fundamental_data/quarterly/income_statement/" + ticker
+            annual_income_statement.to_csv(annual_income_statement_file_loc, index='date')
+            quarterly_balance_sheet_file_loc = str(finpath) + "/storage/fundamental_data/annual/balance_sheet/" + ticker
+            quarterly_balance_sheet.to_csv(quarterly_balance_sheet_file_loc, index='date')
+            annual_balance_sheet_file_loc = str(finpath) + "/storage/fundamental_data/quarterly/balance_sheet/" + ticker
+            annual_balance_sheet.to_csv(annual_balance_sheet_file_loc, index='date')
+            quarterly_cash_flow_file_loc = str(finpath) + "/storage/fundamental_data/annual/cash_flow/" + ticker
+            quarterly_cash_flow.to_csv(quarterly_cash_flow_file_loc, index='date')
+            annual_cash_flow_file_loc = str(finpath) + "/storage/fundamental_data/quarterly/cash_flow/" + ticker
+            annual_cash_flow.to_csv(annual_cash_flow_file_loc, index='date')
+            company_overview_file_loc = str(finpath) + "/storage/fundamental_data/company_overview/" + ticker
+            company_overview.to_csv(company_overview_file_loc, index='date')
+        except Exception as e:
+            print(e)
+            bad_tickers.append(ticker)
+        count += 7
+        if count > 68:
+            end_t = time.time()
+            time_diff = int(end_t - start_t)
+            time.sleep(61 - time_diff)
+            count = 0
+            start_t = time.time()
+    print(bad_tickers)
 
 if __name__ == "__main__":
-    build_fundamental_data(ticker_lst)
-    #tickers = get_sp500_tickers()
-    #ticker_lst = get_tickers()
-    #build_csv()
+    ticker_lst = get_sp500_tickers()
     currency_lst = get_coins()
+    build_csv(ticker_lst)
+    build_fundamental_data(ticker_lst)
     build_crypto_csvs(currency_lst)
-    get_coins()
     
 
 #print(date_getter('daily'))
