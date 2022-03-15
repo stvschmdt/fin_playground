@@ -167,7 +167,7 @@ def build_csv(ticker_lst, timeframe='daily', cols = ['open', 'high', 'low', 'clo
         if count > 60:
             end_t = time.time()
             time_diff = int(end_t - start_t)
-            time.sleep(73 - time_diff)
+            time.sleep(abs(73 - time_diff))
             count = 0
             start_t = time.time()
     print('begin writing')
@@ -263,7 +263,7 @@ def build_crypto_csvs(currency_lst, timeframe='daily', cols = ['open', 'open 2',
         if count > 63:
             end_t = time.time()
             time_diff = int(end_t - start_t)
-            time.sleep(65 - time_diff)
+            time.sleep(abs(65 - time_diff))
             count = 0
             start_t = time.time()
     print(bad_currencies)
@@ -303,7 +303,7 @@ def build_fundamental_data(ticker_lst):
         if count > 68:
             end_t = time.time()
             time_diff = int(end_t - start_t)
-            time.sleep(61 - time_diff)
+            time.sleep(abs(61 - time_diff))
             count = 0
             start_t = time.time()
     print(bad_tickers)
