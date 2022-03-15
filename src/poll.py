@@ -84,72 +84,73 @@ def build_csv(ticker_lst, timeframe='daily', cols = ['open', 'high', 'low', 'clo
                 sma, _ = indicators.get_sma(ticker, timeframe)
                 data['SMA'] = correct_length(length, sma['SMA'].to_list())
                 tech_indicators_dict['SMA'].append(sma['SMA'].to_list())
-                print('made sma', ticker)
+                #print('made sma', ticker)
 
                 ema, _ = indicators.get_ema(ticker, timeframe)
                 data['EMA'] = correct_length(length, ema['EMA'].to_list())
                 tech_indicators_dict['EMA'].append(ema['EMA'].to_list())
-                print('made ema', ticker)
+                #print('made ema', ticker)
 
                 wma, _ = indicators.get_wma(ticker, timeframe)
                 data['WMA'] = correct_length(length, wma['WMA'].to_list())
                 tech_indicators_dict['WMA'].append(wma['WMA'].to_list())
-                print('made wma', ticker)
+                #print('made wma', ticker)
 
                 macd, _ = indicators.get_macd(ticker, timeframe)
                 data['MACD'] = correct_length(length, macd['MACD'].to_list())
                 tech_indicators_dict['MACD'].append(macd['MACD'].to_list())
-                print('made macd', ticker)
+                #print('made macd', ticker)
                 
                 stoch, _ = indicators.get_stoch(ticker, timeframe)
                 data['SLOWD'] = correct_length(length, stoch['SlowD'].to_list())
                 data['SLOWK'] = correct_length(length, stoch['SlowK'].to_list())
-                print(stoch)
+                #print(stoch)
                 tech_indicators_dict['STOCH'].append(stoch.values)
                 #values are appended in as a list of lists, where the first term
                 #is SlowD and the second term is SlowK: (SlowD, SlowK)
-                print('made stoch', ticker)
+                #print('made stoch', ticker)
 
                 rsi, _ = indicators.get_rsi(ticker, timeframe)
                 data['RSI'] = correct_length(length, rsi['RSI'].to_list())
                 tech_indicators_dict['RSI'].append(rsi['RSI'].to_list())
-                print('made rsi', ticker)
+                #print('made rsi', ticker)
 
                 mom, _ = indicators.get_mom(ticker, timeframe)
                 data['MOM'] = correct_length(length, mom['MOM'].to_list())
                 tech_indicators_dict['MOM'].append(mom['MOM'].to_list())
-                print('made mom', ticker)
+                #print('made mom', ticker)
 
                 roc, _ = indicators.get_roc(ticker, timeframe)
                 data['ROC'] = correct_length(length, roc['ROC'].to_list())
                 tech_indicators_dict['ROC'].append(roc['ROC'].to_list())
-                print('made roc', ticker)
+                #print('made roc', ticker)
 
                 mfi, _ = indicators.get_mfi(ticker, timeframe)
                 data['MFI'] = correct_length(length, mfi['MFI'].to_list())
                 tech_indicators_dict['MFI'].append(mfi['MFI'].to_list())
-                print('made mfi', ticker)
+                #print('made mfi', ticker)
 
                 bbands, _ = indicators.get_bbands(ticker, timeframe)
-                print(bbands)
+                #print(bbands)
                 data['LBAND'] = correct_length(length, bbands['Real Lower Band'].to_list())
                 data['UBAND'] = correct_length(length, bbands['Real Upper Band'].to_list())
                 data['MBAND'] = correct_length(length, bbands['Real Middle Band'].to_list())
                 tech_indicators_dict['BBANDS'].append(bbands.values)
                 # First term in list of values is LBand, then UBand, then MBand: (LBand, UBand, MBand)
-                print('made bbands', ticker)
+                #print('made bbands', ticker)
 
                 midprice, _ = indicators.get_midprice(ticker, timeframe)
-                print(midprice)
+                #print(midprice)
                 data['MIDPRICE'] = correct_length(length, midprice['MIDPRICE'].to_list())
                 tech_indicators_dict['MIDPRICE'].append(midprice['MIDPRICE'].to_list())
-                print('made midprice', ticker)
+                #print('made midprice', ticker)
 
-                print('made feature dict')
+                #print('made feature dict')
 
                 
                 data_file_loc = str(finpath) + "/storage/daily/tickers/" + ticker # writes full ticker file to storage
                 data.to_csv(data_file_loc, index='date')
+                logger.info('stock read: {}'.format(ticker))
             elif timeframe == "weekly":
                 data, _ = ts.get_weekly(ticker, outputsize='full')
                 data_file_loc = "SP500_weekly_data/" + ticker
@@ -157,15 +158,16 @@ def build_csv(ticker_lst, timeframe='daily', cols = ['open', 'high', 'low', 'clo
                 data, _ = ts.get_monthly(ticker, outputsize='full')
                 data_file_loc = "SP500_monthly_data/" + ticker
             good_tickers.append(ticker)
-        except:
+        except Exception as e:
+            logger.error(str(e))
             bad_tickers.append(ticker)
-            return -1
+            #return -1
         #need a function that names the columns in the technical indicators dataframes we've constructed
-        count += 12
-        if count > 63:
+        count += 13
+        if count > 60:
             end_t = time.time()
             time_diff = int(end_t - start_t)
-            time.sleep(61 - time_diff)
+            time.sleep(73 - time_diff)
             count = 0
             start_t = time.time()
     print('begin writing')
@@ -243,22 +245,25 @@ def build_crypto_csvs(currency_lst, timeframe='daily', cols = ['open', 'open 2',
     count = 0
     start_t = time.time()
     bad_currencies = []
-    currency_lst = ['BTC']
+    #currency_lst = ['BTC']
     for currency in currency_lst:
         try:
             if timeframe == 'daily':
                 data = crypto.get_digital_currency_daily(currency, market)[0]
                 data.columns = cols
                 data = data.drop(['open 2', 'high 2', 'low 2', 'close 2'], axis=1)
-            filepath = parent_path + '/storage/' + timeframe + '/cryptocurrencies/' + currency
+            #filepath = parent_path + '/storage/' + timeframe + '/cryptocurrencies/' + currency
+            filepath = str(finpath) + '/storage/' + timeframe + '/cryptocurrencies/' + currency
             data.to_csv(filepath)
             count += 1
-        except:
+            logger.info('crypto read: {}'.format(currency))
+        except Exception as e:
             bad_currencies.append(currency)
-        if count > 70:
+            logger.error(str(e))
+        if count > 63:
             end_t = time.time()
             time_diff = int(end_t - start_t)
-            time.sleep(61 - time_diff)
+            time.sleep(65 - time_diff)
             count = 0
             start_t = time.time()
     print(bad_currencies)
@@ -290,6 +295,7 @@ def build_fundamental_data(ticker_lst):
             annual_cash_flow.to_csv(annual_cash_flow_file_loc, index='date')
             company_overview_file_loc = str(finpath) + "/storage/fundamental_data/company_overview/" + ticker
             company_overview.to_csv(company_overview_file_loc, index='date')
+            logger.info('fundamentals read: {}'.format(ticker))
         except Exception as e:
             print(e)
             bad_tickers.append(ticker)
@@ -308,7 +314,7 @@ if __name__ == "__main__":
     currency_lst = get_coins()
     print('coin list read')
     build_csv(ticker_lst)
-    print('ticker csvs built')
+    print('ticker csv built')
     build_fundamental_data(ticker_lst)
     print('fundamentals built')
     build_crypto_csvs(currency_lst)
