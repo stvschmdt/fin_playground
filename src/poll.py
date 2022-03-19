@@ -307,15 +307,15 @@ def build_fundamental_data(ticker_lst):
     print(bad_tickers)
 
 if __name__ == "__main__":
-    ticker_lst = get_sp500_tickers()
-    print('ticker list read')
-    currency_lst = get_coins()
-    print('coin list read')
-    build_csv(ticker_lst)
-    print('ticker csv built')
-    build_fundamental_data(ticker_lst)
-    print('fundamentals built')
-    build_crypto_csvs(currency_lst)
+    #ticker_lst = get_sp500_tickers()
+    #print('ticker list read')
+    #currency_lst = get_coins()
+    #print('coin list read')
+    #build_csv(ticker_lst)
+    #print('ticker csv built')
+    #build_fundamental_data(ticker_lst)
+    #print('fundamentals built')
+    build_crypto_csvs(['BTC', 'ETH', 'DOGE'])
     print('coins built')
     
 

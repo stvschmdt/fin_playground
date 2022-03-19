@@ -21,6 +21,8 @@ abspath = os.path.abspath(os.getcwd())
 finpath = Path(abspath).resolve().parent
 parent_path = str(finpath) + '/'
 
+
+
 #function takes a ticker and returns a dictionary with the data for that ticker
 def build_ticker_dict(ticker, timeframe, start_date = '1999-12-17', end_date='2022-02-25', match_dates = True):
     if not check_dates(start_date, end_date, timeframe):
@@ -30,15 +32,21 @@ def build_ticker_dict(ticker, timeframe, start_date = '1999-12-17', end_date='20
     path1 = path + '/tickers/' + ticker
     data = pd.read_csv(path1)
     data = data.set_index('date')
+
+    fundamentals = pd.read_csv(parent_path + 'storage/fundamental_data/quarterly/income_statement/' + ticker)
+    dictionary['fundamental'] = fundamentals
+
     if not match_dates:
         new_df = data.dropna()
         dictionary['daily'] = new_df
+        return dictionary
     if start_date in data.index:
         data = data.loc[end_date:start_date]
         old_shape = data.shape
         new_df = data.dropna()
         if new_df.shape == old_shape:
             dictionary['daily'] = new_df
+            return dictionary
         else:
             print('contains NA within date range:', ticker)
             return ticker
@@ -46,10 +54,6 @@ def build_ticker_dict(ticker, timeframe, start_date = '1999-12-17', end_date='20
         print('does not contain start date:', ticker)
         return ticker
 
-    fundamentals = pd.read_csv(parent_path + 'storage/fundamental_data/quarterly/income_statement/' + ticker)
-    dictionary['fundamental'] = fundamentals
-
-    return dictionary
 
 def build_ticker_dicts(ticker_lst, timeframe, start_date = '1999-12-17', end_date='2022-02-25', match_dates = True):
     dictionary = {}
@@ -59,24 +63,51 @@ def build_ticker_dicts(ticker_lst, timeframe, start_date = '1999-12-17', end_dat
 
 
 
-def build_feature_dicts(feature_lst, timeframe, start_date, end_date):
-    valid_dates = get_valid_dates(timeframe)
-    dictionary = {'features' : {}}
-    if start_date not in valid_dates:
-        print('start date not valid')
-        return 0
-    if end_date not in valid_dates:
-        print('end dates not valid')
+
+#functions that get data for a certain technical indicator
+def build_feature_df(feature, timeframe, ticker_lst=[], start_date='1999-12-17', end_date='2022-02-25', match_dates=True, all_cols=True):
+    if not check_dates(start_date, end_date, timeframe):
         return 0
     path = parent_path + 'storage/' + timeframe
-    for feature in feature_lst:
-        path2 = path + '/features/' + feature
-        data = pd.read_csv(path2)
-        data = data.set_index('date')
-        data = data.loc[end_date:start_date]
+    path2 = path + '/features/' + feature
+    data = pd.read_csv(path2)
+    data = data.set_index('date')
+    data = data.loc[end_date:start_date]
+    
+    if not all_cols:
+        data = data[ticker_lst]
+
+    if match_dates:
         data = data.dropna('columns')
-        dictionary['features'][feature] = data
+    
+    return data
+
+
+def build_feature_dicts(features, timeframe, ticker_lst=[], start_date='1999-12-17', end_date='2022-02-25', match_dates=True, all_cols=True):
+    dictionary = {}
+    for feature in features:
+        data = build_feature_df(feature, timeframe, ticker_lst, start_date, end_date, match_dates, all_cols)
+        dictionary[feature] = data
     return dictionary
+
+
+
+def build_crypto_df(coin, timeframe, start_date='2019-06-24', end_date='2022-03-19', match_dates=True):
+    path = parent_path + 'storage/' + timeframe
+    path3 = path + '/cryptocurrencies/' + coin
+
+    data = pd.read_csv(path3)
+    data = data.set_index('date')
+    
+    if not match_dates:
+        return data
+
+    data = data.loc[end_date:start_date]
+    
+
+
+
+
 
 #function returns a list of valid dates
 def get_valid_dates(timeframe):
@@ -95,10 +126,10 @@ def check_dates(start_date, end_date, timeframe):
     return 1
 
 
-# write functionality to check if the date entered for start or end date was a weekend
 
 if __name__ == "__main__":
     #build_dicts(["AAPL", "MMM", "ZION", "ZTS", "XRX", "TSLA"], ['SMA', 'EMA', 'WMA', 'MACD', 'STOCH', 'RSI', 'MOM', 'ROC', 'MFI', 'BBANDS', 'MIDPRICE'], "daily", "2004-11-05", "2020-12-14")
     print('main')
     print(parent_path)
-    print(build_ticker_dict('AAPL', 'daily'))
+    #print(build_ticker_dict('AAPL', 'daily'))
+    print(build_feature_dicts(['EMA', 'MACD'], 'daily'))
