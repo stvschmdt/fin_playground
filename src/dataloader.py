@@ -57,8 +57,14 @@ def build_ticker_dict(ticker, timeframe, start_date = '1999-12-17', end_date='20
 
 def build_ticker_dicts(ticker_lst, timeframe, start_date = '1999-12-17', end_date='2022-02-25', match_dates = True):
     dictionary = {}
+    bad_tickers = []
     for ticker in ticker_lst:
-        dictionary['ticker'] = build_ticker_dict(ticker, timeframe, start_date, end_date, match_dates)
+        data = build_ticker_dict(ticker, timeframe, start_date, end_date, match_dates)
+        if data == ticker:
+            bad_tickers.append(ticker)
+            continue
+        dictionary['ticker'] = data
+    print('bad tickers:', bad_tickers)
     return dictionary
 
 
@@ -102,11 +108,49 @@ def build_crypto_df(coin, timeframe, start_date='2019-06-24', end_date='2022-03-
     if not match_dates:
         return data
 
-    data = data.loc[end_date:start_date]
+    if start_date in data.index:
+        data = data.loc[end_date:start_date]
+        old_shape = data.shape
+        new_df = data.dropna()
+        if new_df.shape == old_shape:
+            return new_df
+        else:
+            print('contains NA within date range:', coin)
+            return coin
+    else:
+        print('does not contain start date:', coin)
+        return coin
+
+def build_cryto_dict(coins, timeframe, start_date='2019-06-24', end_date='2022-03-19', match_dates=True):
+    dictionary = {}
+    bad_coins = []
+    for coin in coins:
+        data = build_crypto_df(coin, timeframe, start_date, end_date, match_dates)
+        if data == coin:
+            bad_coins.append(coin)
+            continue
+        dictionary[coin] = data
+    print('bad coins:', bad_coins)
+    return dictionary
+            
     
 
 
 
+#list of dates where we have market data for cryptocurrencies
+def get_valid_crypto_dates():
+    path = parent_path + 'storage/daily/cryptocurrenices/BTC'
+    data = pd.read_csv(path)
+    return data['date'].to_list()
+
+def check_valid_crypto_dates(start_date, end_date, valid_dates):
+    if start_date not in valid_dates:
+        print('start date not valid')
+        return 0
+    if end_date not in valid_dates:
+        print('end date not valid')
+        return 0
+    return 1
 
 
 #function returns a list of valid dates
@@ -132,4 +176,5 @@ if __name__ == "__main__":
     print('main')
     print(parent_path)
     #print(build_ticker_dict('AAPL', 'daily'))
-    print(build_feature_dicts(['EMA', 'MACD'], 'daily'))
+    print(build_ticker_dicts(['AAPL', 'MMM', 'XRX', 'ZION', 'ZTS'], 'daily'))
+    #print(build_feature_dicts(['EMA', 'MACD'], 'daily'))
