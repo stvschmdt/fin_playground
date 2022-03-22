@@ -63,7 +63,7 @@ def build_ticker_dicts(ticker_lst, timeframe, start_date = '1999-12-17', end_dat
         if data == ticker:
             bad_tickers.append(ticker)
             continue
-        dictionary['ticker'] = data
+        dictionary[ticker] = data
     print('bad tickers:', bad_tickers)
     return dictionary
 
@@ -132,8 +132,11 @@ def build_cryto_dict(coins, timeframe, start_date='2019-06-24', end_date='2022-0
         dictionary[coin] = data
     print('bad coins:', bad_coins)
     return dictionary
-            
-    
+
+
+#builds a rolling average of closing prices for tickers      
+def build_ticker_rolling_average(dictionary, rolling_interval, timeframe='daily'):
+    pass
 
 
 
@@ -176,5 +179,7 @@ if __name__ == "__main__":
     print('main')
     print(parent_path)
     #print(build_ticker_dict('AAPL', 'daily'))
-    print(build_ticker_dicts(['AAPL', 'MMM', 'XRX', 'ZION', 'ZTS'], 'daily'))
+    ticker_dict = build_ticker_dicts(['AAPL', 'MMM', 'XRX', 'ZION'], 'daily')
+    print(ticker_dict['AAPL']['daily'])
+    print(ticker_dict.keys())
     #print(build_feature_dicts(['EMA', 'MACD'], 'daily'))
