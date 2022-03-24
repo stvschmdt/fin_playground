@@ -8,6 +8,7 @@ from alpha_vantage.timeseries import TimeSeries
 import alpha_vantage.techindicators as ti
 import alpha_vantage.cryptocurrencies as cc
 import alpha_vantage.fundamentaldata as fd
+import alpha_vantage.sectorperformance as sp
 import collections
 import csv
 import os
@@ -33,6 +34,7 @@ with open(api_path) as f:
     API_key = f.readlines()[0]
     API_key = API_key.strip('\n')
 ts = TimeSeries(key=API_key, output_format='pandas')
+sectors = sp.SectorPerformances(key=API_key, output_format='pandas')
 indicators = ti.TechIndicators(key=API_key, output_format='pandas')
 fundamentals = fd.FundamentalData(key=API_key, output_format='pandas')
 crypto = cc.CryptoCurrencies(key=API_key, output_format='pandas')
@@ -315,8 +317,9 @@ if __name__ == "__main__":
     #print('ticker csv built')
     #build_fundamental_data(ticker_lst)
     #print('fundamentals built')
-    build_crypto_csvs(['BTC', 'ETH', 'DOGE'])
-    print('coins built')
+    #build_crypto_csvs(['BTC', 'ETH', 'DOGE'])
+    #print('coins built')
+    print(sectors.get_sector()[0]["Rank B: Day Performance"])
     
 
 #print(date_getter('daily'))
