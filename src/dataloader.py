@@ -18,10 +18,12 @@ from pathlib import Path
 from datetime import datetime
 from datetime import timedelta
 
+pd.options.mode.chained_assignment = None
+
+
 abspath = os.path.abspath(os.getcwd())
 finpath = Path(abspath).resolve().parent
 parent_path = str(finpath) + '/'
-
 
 
 #function takes a ticker and returns a dictionary with the data for that ticker
@@ -34,8 +36,12 @@ def build_ticker_dict(ticker, timeframe, start_date = '1999-12-17', end_date='20
     data = pd.read_csv(path1)
     data = data.set_index('date')
 
-    fundamentals = pd.read_csv(parent_path + 'storage/fundamental_data/quarterly/income_statement/' + ticker)
-    dictionary['fundamental'] = fundamentals
+    fundamental_income = pd.read_csv(parent_path + 'storage/fundamental_data/quarterly/income_statement/' + ticker)
+    fundamental_balance_sheet = pd.read_csv(parent_path + 'storage/fundamental_data/quarterly/balance_sheet/' + ticker)
+    fundamental_cash_flow = pd.read_csv(parent_path + 'storage/fundamental_data/quarterly/cash_flow/' + ticker)
+    fundamental_company_overview = pd.read_csv(parent_path + 'storage/fundamental_data/company_overview/' + ticker)
+    dictionary['fundamental'] = {"income statement" : fundamental_income, "balance sheet" : fundamental_balance_sheet,
+                                 "cash flow" : fundamental_cash_flow, "company overview" : fundamental_company_overview}
 
     if not match_dates:
         new_df = data.dropna()
@@ -183,10 +189,35 @@ def check_dates(start_date, end_date, timeframe):
         return 0
     return 1
 
+def build_sector_dict(ticker_dict):
+    sector_dict = {}
+    ticker_lst = list(ticker_dict.keys())
+    for ticker in ticker_lst:
+        sector = ticker_dict[ticker]['fundamental']['company overview']["Sector"][0]
+        industry = ticker_dict[ticker]['fundamental']['company overview']["Industry"][0]
+        if sector not in sector_dict.keys():
+            sector_dict[sector] = {}
+        if industry not in sector_dict[sector]:
+            sector_dict[sector][industry] = [ticker]
+        else:
+            sector_dict[sector][industry].append(ticker)
+    return sector_dict
 
+#1. this can likely be easily generalized to accept arguments for cryptocurrencies as well
+#2. function also assumes that the dimensions of your dataframes are all the same and do not have NaN values
+#3. possible extension of this function could potentially normalize the shape of the selected ticker dataframes
+#   before summing the values in the dataframe to build an index
+def build_index(tickers, ticker_dict):
+    df_lst = []
+    for ticker in tickers:
+        df_lst.append(ticker_dict[ticker]['daily'])
+    index_df = sum(df_lst)
+    index_df = index_df[["open", "high", "low", "close", "adj_close", "volume"]]
+    return index_df
 
 if __name__ == "__main__":
     print('main')
-    print(parent_path)
     ticker_dict = build_ticker_dicts(['AAPL', 'MMM', 'XRX', 'ZION'], 'daily')
-    #print(build_rolling_average(ticker_dict, 'volume', 300))
+    build_rolling_average(ticker_dict, 'volume', 100)
+    build_sector_dict(ticker_dict)
+    build_index(['AAPL', 'MMM', 'XRX', 'ZION'], ticker_dict)
