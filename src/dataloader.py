@@ -218,6 +218,7 @@ def build_index(tickers, ticker_dict):
 if __name__ == "__main__":
     print('main')
     ticker_dict = build_ticker_dicts(['AAPL', 'MMM', 'XRX', 'ZION'], 'daily')
-    build_rolling_average(ticker_dict, 'volume', 100)
-    build_sector_dict(ticker_dict)
-    build_index(['AAPL', 'MMM', 'XRX', 'ZION'], ticker_dict)
+    #build_rolling_average(ticker_dict, 'volume', 100)
+    #build_sector_dict(ticker_dict)
+    #build_index(['AAPL', 'MMM', 'XRX', 'ZION'], ticker_dict)
+    print(ticker_dict['AAPL']['daily'])
