@@ -23,7 +23,7 @@ from dataloader import *
 
 ticker_lst = ['AAPL', 'MMM', 'ZION']
 
-ticker_dict = build_ticker_dicts(ticker_lst, 'daily')
+
 #print(ticker_dict)
 
 
@@ -43,15 +43,10 @@ def shift_columns(df, n=0):
     return df
 
 
-def get_appended_df(dictionary, ticker_to_predict, add_pcts = True, shift = True, shift_n = 3):
+def get_appended_df(dictionary, add_pcts = True, shift = True, shift_n = 3):
     count = 1
-    #df = dictionary[ticker_to_predict]['daily']
-    #print(df.columns)
-    #begin = df.index
-    #df['pct_change'] = df['close'].pct_change(1)
     tickers = list(dictionary.keys())
     print(tickers)
-    #tickers.remove(ticker_to_predict)
     for ticker in tickers:
         new_data = dictionary[ticker]['daily']
         if add_pcts:
@@ -70,4 +65,12 @@ def get_appended_df(dictionary, ticker_to_predict, add_pcts = True, shift = True
         count += 1
     return begin.dropna(axis=0)
 
-print(get_appended_df(ticker_dict, 'AAPL'))
+def get_y(ticker_to_predict):
+    pass
+
+def decision_tree(df, ticker_to_predict):
+    pass
+
+
+ticker_dict = build_ticker_dicts(ticker_lst, 'daily')
+print(get_appended_df(ticker_dict))
