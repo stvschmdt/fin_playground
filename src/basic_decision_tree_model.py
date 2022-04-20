@@ -21,24 +21,56 @@ from dataloader import *
 #fit and predict
 
 
-ticker_lst = ['AAPL', 'MMM']
+ticker_lst = ['AAPL', 'MMM', 'ZION']
 
-ticker_dict = build_ticker_dicts(ticker_lst, 'daily')
+
 #print(ticker_dict)
 
-def get_appended_df(dictionary, ticker_to_predict):
-    df = dictionary[ticker_to_predict]['daily']
-    print(df)
-    df['next_close'] = df['close'].shift(1)
+
+def add_pct_changes(df):
+    columns = df.columns
+    for column in columns:
+        column_name = column + '_pct_change'
+        df[column_name] = df[column].pct_change()
+    return df
+
+def shift_columns(df, n=0):
+    columns = df.columns
+    for column in columns:
+        for i in range(1, n+1):
+           column_name = column + '_shift_' + str(i)
+           df[column_name] = df[column].shift(-i)
+    return df
+
+
+def get_appended_df(dictionary, add_pcts = True, shift = True, shift_n = 3):
+    count = 1
     tickers = list(dictionary.keys())
-    print(tickers)
-    tickers.remove(ticker_to_predict)
     print(tickers)
     for ticker in tickers:
         new_data = dictionary[ticker]['daily']
-        df = pd.merge(df, new_data, on='date', how='outer')
-        print(df) 
-        print(df.columns)   
-    return df.dropna(axis=0)
+        if add_pcts:
+            new_data = add_pct_changes(new_data)
+        if shift:
+            new_data = shift_columns(new_data, shift_n)
+        if count == 1:
+            begin = new_data
+            print('ADDED', ticker)  
+            print(begin)
+            count += 1
+            continue    
+        begin = pd.merge(begin, new_data, on='date', how='outer')
+        print('ADDED', ticker)  
+        print(begin)
+        count += 1
+    return begin.dropna(axis=0)
 
-print(get_appended_df(ticker_dict, 'AAPL'))
+def get_y(ticker_to_predict):
+    pass
+
+def decision_tree(df, ticker_to_predict):
+    pass
+
+
+ticker_dict = build_ticker_dicts(ticker_lst, 'daily')
+print(get_appended_df(ticker_dict))
