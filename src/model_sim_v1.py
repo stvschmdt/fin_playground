@@ -27,7 +27,13 @@ class TraderV1(object):
         self.actions = {}
         self.start = None
         self.end = None
+        self.model = None
 
+
+    def train(X, y):
+        # train model function
+        # return history or model vars
+        return 0
 
     def get_model(self, path):
         # read in saved model from file
