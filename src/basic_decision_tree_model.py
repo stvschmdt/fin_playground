@@ -7,18 +7,22 @@ import matplotlib.pyplot as plt
 from datetime import datetime
 from pathlib import Path
 from datetime import datetime
+import pandas as pd
+import numpy as np
+from sklearn.model_selection import cross_val_score
+from xgboost import XGBRegressor
+from xgboost import XGBClassifier
+from sklearn.model_selection import train_test_split
 
 from dataloader import *
 
 
+pd.options.mode.chained_assignment = None
 
-#need to get data from all tickers next to each other in one df
-#    #need to add in shifted adjusted close
-#    #dictionary with required tickers is available
-#    #need function that iterates through tickers and appends onto df
-#    #need function
-#train test split
-#fit and predict
+
+abspath = os.path.abspath(os.getcwd())
+finpath = Path(abspath).resolve().parent
+parent_path = str(finpath) + '/'
 
 
 ticker_lst = ['AAPL', 'MMM', 'ZION']
@@ -31,7 +35,8 @@ def add_pct_changes(df):
     columns = df.columns
     for column in columns:
         column_name = column + '_pct_change'
-        df[column_name] = df[column].pct_change()
+        df[column_name] = df[column].pct_change(-1)
+        #print(df[column_name])
     return df
 
 def shift_columns(df, n=0):
@@ -58,7 +63,8 @@ def get_appended_df(dictionary, add_pcts = True, shift = True, shift_n = 3):
             print('ADDED', ticker)  
             print(begin)
             count += 1
-            continue    
+            continue
+        #print(new_data)    
         begin = pd.merge(begin, new_data, on='date', how='outer')
         print('ADDED', ticker)  
         print(begin)
@@ -66,11 +72,21 @@ def get_appended_df(dictionary, add_pcts = True, shift = True, shift_n = 3):
     return begin.dropna(axis=0)
 
 def get_y(ticker_to_predict):
-    pass
+     path = parent_path + 'storage/daily/tickers/' + str(ticker_to_predict)
+     df = pd.read_csv(path)
+     y = df['close'].pct_change(-1)
+     return y.shift(1)
 
-def decision_tree(df, ticker_to_predict):
-    pass
+def decision_tree_regressor(df, ticker_to_predict):
+    df = df.iloc[1:, :]
+    length = len(df)
+    y = get_y(ticker_to_predict)
+    y = y[:len]
+    model = XGBRegressor(n_estimators = 250, learning_rate = 0.02, random_state=0)
+    X_train, X_valid, y_train, y_valid = train_test_split(df, y, train_size=0.8, test_size=0.2)
+
 
 
 ticker_dict = build_ticker_dicts(ticker_lst, 'daily')
-print(get_appended_df(ticker_dict))
+#print(get_appended_df(ticker_dict))
+print(get_y('AAPL'))
