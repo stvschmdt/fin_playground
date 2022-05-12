@@ -46,12 +46,20 @@ def shift_columns(df, n=0):
     return df
 
 
+
+#some weird thing going on with dates 2004-09-23 through 28, I'm pretty sure when ZION gets appended
+#going to change the start dates for now to avoid this
 def get_appended_df(dictionary, add_pcts = True, shift = True, shift_n = 3):
     count = 1
     tickers = list(dictionary.keys())
     print(tickers)
     for ticker in tickers:
         new_data = dictionary[ticker]['daily']
+        print('SHAPE:', new_data.shape)
+        print('NA:', new_data.isna().sum().sum())
+        if new_data.isna().sum().sum() > 0:
+            print('BAD DATA:', ticker)
+            continue
         if add_pcts:
             new_data = add_pct_changes(new_data)
         if shift:
@@ -59,11 +67,10 @@ def get_appended_df(dictionary, add_pcts = True, shift = True, shift_n = 3):
         if count == 1:
             begin = new_data
             print('ADDED', ticker)  
-            print(begin)
             count += 1
             continue   
         begin = pd.merge(begin, new_data, on='date', how='outer')
-        print('ADDED', ticker)  
+        print('ADDED', ticker)
         
         count += 1
     print(begin[begin.isna().any(axis=1)])
@@ -83,11 +90,28 @@ def decision_tree_classifier(df, ticker_to_predict, pos_threshold, neg_threshold
     length = len(df)
     y = get_y(ticker_to_predict)
     y = y[:length]
+    print(np.isinf(df).values.sum())
+    print(df)
+    print(y)
+    df.replace([np.inf, -np.inf], np.nan, inplace=True)
+    df.dropna(axis=1)
+    print(df)
     model = XGBClassifier(n_estimators = 250, learning_rate = 0.02, random_state=0)
     x_train, x_valid, y_train, y_valid = train_test_split(df, encode_y(y, pos_threshold, neg_threshold), train_size=0.8, test_size=0.2)
     model.fit(x_train, y_train)
     preds = model.predict(x_valid)
     print(preds)
+    print(len(preds))
+    print(eval_preds(preds, y_valid))
+    return preds
+
+def eval_preds(preds, y_valid):
+    count = 0
+    for i in range(len(preds)):
+        if preds[i] == y_valid[i]:
+            count += 1
+    return count / len(preds)
+
 
 def encode_y(y, pos_threshold, neg_threshold):
     encoded_y = [encode_method(pos_threshold, neg_threshold, i) for i in y]

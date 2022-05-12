@@ -27,7 +27,7 @@ parent_path = str(finpath) + '/'
 
 
 #function takes a ticker and returns a dictionary with the data for that ticker
-def build_ticker_dict(ticker, timeframe, start_date = '1999-12-17', end_date='2022-02-25', match_dates = True):
+def build_ticker_dict(ticker, timeframe, start_date = '2004-09-30', end_date='2022-02-25', match_dates = True):
     if not check_dates(start_date, end_date, timeframe):
         return 0
     path = parent_path + 'storage/' + timeframe
@@ -62,7 +62,7 @@ def build_ticker_dict(ticker, timeframe, start_date = '1999-12-17', end_date='20
         return ticker
 
 
-def build_ticker_dicts(ticker_lst, timeframe, start_date = '1999-12-17', end_date='2022-02-25', match_dates = True):
+def build_ticker_dicts(ticker_lst, timeframe, start_date = '2004-09-30', end_date='2022-02-25', match_dates = True):
     dictionary = {}
     bad_tickers = []
     for ticker in ticker_lst:
