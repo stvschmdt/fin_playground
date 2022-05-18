@@ -93,7 +93,7 @@ def decision_tree_classifier(df, ticker_to_predict, pos_threshold, neg_threshold
     df.replace([np.inf, -np.inf], np.nan, inplace=True)
     df.dropna(axis=1)
     print(df)
-    model = XGBClassifier(n_estimators = 250, learning_rate = 0.02, random_state=0)
+    model = XGBClassifier(n_estimators = 500, learning_rate = 0.001, random_state=0)
     x_train, x_valid, y_train, y_valid = train_test_split(df, encode_y(y, pos_threshold, neg_threshold), train_size=0.8, test_size=0.2)
     model.fit(x_train, y_train)
     preds = model.predict(x_valid)
@@ -119,7 +119,7 @@ def decision_tree_regressor(df, ticker_to_predict):
     print(preds)
     print(y_valid)
     print(mse)
-    return preds
+    return preds 
 
 
 def eval_classifier_preds(preds, y_valid):
@@ -155,5 +155,5 @@ df = get_appended_df(ticker_dict)
 #print(df[df == np.inf].count())
 #print(len(df))
 
-#decision_tree_classifier(df, 'AAPL', 0.01, -0.01)
-decision_tree_regressor(df, 'AAPL')
+decision_tree_classifier(df, 'AAPL', 0.01, -0.01)
+#decision_tree_regressor(df, 'AAPL')
