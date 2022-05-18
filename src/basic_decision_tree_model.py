@@ -90,9 +90,6 @@ def decision_tree_classifier(df, ticker_to_predict, pos_threshold, neg_threshold
     length = len(df)
     y = get_y(ticker_to_predict)
     y = y[:length]
-    print(np.isinf(df).values.sum())
-    print(df)
-    print(y)
     df.replace([np.inf, -np.inf], np.nan, inplace=True)
     df.dropna(axis=1)
     print(df)
@@ -101,11 +98,31 @@ def decision_tree_classifier(df, ticker_to_predict, pos_threshold, neg_threshold
     model.fit(x_train, y_train)
     preds = model.predict(x_valid)
     print(preds)
-    print(len(preds))
-    print(eval_preds(preds, y_valid))
+    print(y_valid)
+    print(eval_classifier_preds(preds, y_valid))
     return preds
 
-def eval_preds(preds, y_valid):
+def decision_tree_regressor(df, ticker_to_predict):
+    df = df.iloc[1:, :]
+    length = len(df)
+    y = get_y(ticker_to_predict)
+    y = y[:length]
+    print(y)
+    df.replace([np.inf, -np.inf], np.nan, inplace=True)
+    df.dropna(axis=1)
+    model = XGBRegressor(n_estimators = 250, learning_rate = 0.02, random_state=0)
+    x_train, x_valid, y_train, y_valid = train_test_split(df, y, train_size=0.8, test_size=0.2)
+    model.fit(x_train, y_train)
+    preds = model.predict(x_valid)
+    print(preds-y_valid)
+    mse = (np.square(preds - y_valid)).mean()
+    print(preds)
+    print(y_valid)
+    print(mse)
+    return preds
+
+
+def eval_classifier_preds(preds, y_valid):
     count = 0
     for i in range(len(preds)):
         if preds[i] == y_valid[i]:
@@ -131,11 +148,12 @@ def encode_method(pos_threshold, neg_threshold, x):
 
 ticker_dict = build_ticker_dicts(ticker_lst, 'daily')
 df = get_appended_df(ticker_dict)
-print(get_y('AAPL'))
+#print(get_y('AAPL'))
 
 #print(encode_y(get_y('AAPL'), 0.01, -0.01))
 
 #print(df[df == np.inf].count())
 #print(len(df))
 
-decision_tree_classifier(df, 'AAPL', 0.01, -0.01)
+#decision_tree_classifier(df, 'AAPL', 0.01, -0.01)
+decision_tree_regressor(df, 'AAPL')
