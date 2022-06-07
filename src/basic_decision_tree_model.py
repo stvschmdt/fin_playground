@@ -9,6 +9,7 @@ from pathlib import Path
 from datetime import datetime
 import pandas as pd
 import numpy as np
+from setuptools import SetuptoolsDeprecationWarning
 from sklearn.model_selection import cross_val_score
 from xgboost import XGBRegressor, XGBClassifier
 from sklearn.model_selection import train_test_split
@@ -24,8 +25,7 @@ finpath = Path(abspath).resolve().parent
 parent_path = str(finpath) + '/'
 
 
-ticker_lst = ['AAPL', 'MMM', 'ZION']
-
+ticker_lst = ['AAPL'] # , 'MMM', 'ZION']
 
 #print(ticker_dict)
 
@@ -46,6 +46,28 @@ def shift_columns(df, n=0):
     return df
 
 
+#sigmoid function
+def sigmoid(array):
+    for i in range(len(array)):
+        x = array[i]
+        z = np.exp(-x)
+        sig = 1 / (1 + z)
+        array[i] = sig
+    return array
+
+#apply log if array is positive, apply sigmoid if array is negative
+def condense_df(df):
+    cols = df.columns
+    for col in cols:
+        if (df[col] < 0).sum() > 0:
+            new_col = sigmoid(df[col])
+        else:
+            new_col = np.log(df[col])
+        df[col] = new_col
+    return df
+
+
+
 
 #some weird thing going on with dates 2004-09-23 through 28, I'm pretty sure when ZION gets appended
 #going to change the start dates for now to avoid this
@@ -55,6 +77,9 @@ def get_appended_df(dictionary, add_pcts = True, shift = True, shift_n = 3):
     print(tickers)
     for ticker in tickers:
         new_data = dictionary[ticker]['daily']
+        print(new_data)
+        new_data = condense_df(new_data)
+        print(new_data)
         print('SHAPE:', new_data.shape)
         print('NA:', new_data.isna().sum().sum())
         if new_data.isna().sum().sum() > 0:
@@ -93,8 +118,13 @@ def decision_tree_classifier(df, ticker_to_predict, pos_threshold, neg_threshold
     df.replace([np.inf, -np.inf], np.nan, inplace=True)
     df.dropna(axis=1)
     print(df)
-    model = XGBClassifier(n_estimators = 500, learning_rate = 0.001, random_state=0)
-    x_train, x_valid, y_train, y_valid = train_test_split(df, encode_y(y, pos_threshold, neg_threshold), train_size=0.8, test_size=0.2)
+    model = XGBClassifier(n_estimators = 250, learning_rate = 0.002, random_state=0)
+    y = encode_y(y, pos_threshold, neg_threshold)
+    x_train = df[:-20]
+    x_valid = df[-20:]
+    y_train = y[:-20]
+    y_valid = y[-20:]
+    #x_train, x_valid, y_train, y_valid = train_test_split(df, encode_y(y, pos_threshold, neg_threshold), train_size=0.8, test_size=0.2)
     model.fit(x_train, y_train)
     preds = model.predict(x_valid)
     print(preds)
@@ -110,8 +140,12 @@ def decision_tree_regressor(df, ticker_to_predict):
     print(y)
     df.replace([np.inf, -np.inf], np.nan, inplace=True)
     df.dropna(axis=1)
-    model = XGBRegressor(n_estimators = 250, learning_rate = 0.02, random_state=0)
-    x_train, x_valid, y_train, y_valid = train_test_split(df, y, train_size=0.8, test_size=0.2)
+    model = XGBRegressor(n_estimators = 500, learning_rate = 0.002, random_state=0)
+    x_train = df[:-20]
+    x_valid = df[-20:]
+    y_train = y[:-20]
+    y_valid = y[-20:]
+    #x_train, x_valid, y_train, y_valid = train_test_split(df, y, train_size=0.8, test_size=0.2)
     model.fit(x_train, y_train)
     preds = model.predict(x_valid)
     print(preds-y_valid)
@@ -147,7 +181,7 @@ def encode_method(pos_threshold, neg_threshold, x):
 
 
 ticker_dict = build_ticker_dicts(ticker_lst, 'daily')
-df = get_appended_df(ticker_dict)
+df = get_appended_df(ticker_dict, add_pcts = False, shift = False)
 #print(get_y('AAPL'))
 
 #print(encode_y(get_y('AAPL'), 0.01, -0.01))
