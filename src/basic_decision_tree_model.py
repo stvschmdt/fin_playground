@@ -118,12 +118,12 @@ def decision_tree_classifier(df, ticker_to_predict, pos_threshold, neg_threshold
     df.replace([np.inf, -np.inf], np.nan, inplace=True)
     df.dropna(axis=1)
     print(df)
-    model = XGBClassifier(n_estimators = 250, learning_rate = 0.002, random_state=0)
+    model = XGBClassifier(n_estimators = 25, learning_rate = 0.02, random_state=0)
     y = encode_y(y, pos_threshold, neg_threshold)
-    x_train = df[:-20]
-    x_valid = df[-20:]
-    y_train = y[:-20]
-    y_valid = y[-20:]
+    x_train = df[20:150]
+    x_valid = df[:20]
+    y_train = y[20:150]
+    y_valid = y[:20]
     #x_train, x_valid, y_train, y_valid = train_test_split(df, encode_y(y, pos_threshold, neg_threshold), train_size=0.8, test_size=0.2)
     model.fit(x_train, y_train)
     preds = model.predict(x_valid)
@@ -141,10 +141,10 @@ def decision_tree_regressor(df, ticker_to_predict):
     df.replace([np.inf, -np.inf], np.nan, inplace=True)
     df.dropna(axis=1)
     model = XGBRegressor(n_estimators = 500, learning_rate = 0.002, random_state=0)
-    x_train = df[:-20]
-    x_valid = df[-20:]
-    y_train = y[:-20]
-    y_valid = y[-20:]
+    x_train = df[20:150]
+    x_valid = df[:20]
+    y_train = y[20:150]
+    y_valid = y[:20]
     #x_train, x_valid, y_train, y_valid = train_test_split(df, y, train_size=0.8, test_size=0.2)
     model.fit(x_train, y_train)
     preds = model.predict(x_valid)
