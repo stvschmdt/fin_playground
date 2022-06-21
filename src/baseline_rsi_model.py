@@ -20,8 +20,8 @@ def rsi_method(ticker):
     rsi_df = ticker_df[['close', 'RSI']]
     rsi_df['signal'] = encode_rsi(rsi_df['RSI'])
     rsi_df['pct_change'] = rsi_df['close'].pct_change(-1).shift(1)
-    rsi_df['pct_change_in_portfolio'] = 1 + rsi_df['pct_change'] * rsi_df['signal']
-    rsi_df['portfolio_value'] = rsi_df['pct_change_in_portfolio'][::-1].cumprod()
+    rsi_df['change_in_portfolio'] = rsi_df['pct_change'] * rsi_df['signal']
+    rsi_df['portfolio_value'] = rsi_df['change_in_portfolio'][::-1].cumsum()
     print(rsi_df['portfolio_value'][1])
     print((rsi_df['close'][0] - rsi_df['close'][-1]) / rsi_df['close'][-1])
     return rsi_df['portfolio_value'][1]
